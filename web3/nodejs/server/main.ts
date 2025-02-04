@@ -12,7 +12,7 @@ interface Block{
 }
 
 
-//import * as crypto from 'crypto';
+import * as crypto from 'crypto';
 
 let nonce = 0;
 async function generateHash(input : string) : Promise<string>{
