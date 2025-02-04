@@ -11,3 +11,16 @@ interface Block{
     previousBlockHash : string; // 이전 블록의 해시값
 }
 
+
+//import * as crypto from 'crypto';
+
+let nonce = 0;
+async function generateHash(input : string) : Promise<string>{
+    const msgBuffer = new TextEncoder().encode(input); // UTF-8 으로 변환합니다.
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map( b => ('00'+b.toString(16)).slice(-2)).join("");
+
+    return hashHex;
+}
+
