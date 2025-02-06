@@ -24,3 +24,15 @@ async function generateHash(input : string) : Promise<string>{
     return hashHex;
 }
 
+async function calculateHashWithNonce(nonce: number): Promise<string>{
+    const data = 'Hello World' + nonce;
+    return generateHash(data);
+}
+
+async function mine(): Promise<void>{
+    let hash:string;
+    do{
+        hash = await calculateHashWithNonce(++nonce);
+    }while(hash.startsWith('0000') === false );
+    console.log(`Hash:${hash}, nonce:${nonce}`);
+}
