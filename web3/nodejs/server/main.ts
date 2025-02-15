@@ -11,6 +11,16 @@ interface Block{
 
 import * as crypto from 'crypto';
 
+/*
+    function hashSample(password: number) : number
+    {
+        const hash = 10 + (password % 2);
+        console.log(`Original password : ${password}, hashed value: ${hash}`);
+        return hash;
+    }
+*/
+
+
 let nonce = 0;
 async function generateHash(input : string) : Promise<string>{
     const msgBuffer = new TextEncoder().encode(input); // UTF-8 으로 변환합니다.
