@@ -20,7 +20,7 @@ export class Logger {
 
     public debug(message: string): void {
         console.debug(`[DEBUG] ${new Date().toISOString()} - ${message}`);
-    }
+    } 
 
     public warn(message: string): void {
         console.warn(`[WARN] ${new Date().toISOString()} - ${message}`);
