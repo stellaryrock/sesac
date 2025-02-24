@@ -10,6 +10,7 @@ interface Block{
 
 
 import * as crypto from 'crypto';
+import * as Logger from './logger';
 
 /*
     function hashSample(password: number) : number
