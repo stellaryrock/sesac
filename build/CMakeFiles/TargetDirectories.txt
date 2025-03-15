@@ -1,0 +1,3 @@
+/home/kjs123/source/learn/build/CMakeFiles/p2p_jsonrpc.dir
+/home/kjs123/source/learn/build/CMakeFiles/edit_cache.dir
+/home/kjs123/source/learn/build/CMakeFiles/rebuild_cache.dir
