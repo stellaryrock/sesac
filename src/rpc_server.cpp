@@ -37,14 +37,16 @@ void RpcServer::accept_connection() {
 void RpcServer::handle_connection(asio::ip::tcp::socket socket) {
     try {
         asio::streambuf buffer;
-        asio::read_until(socket, buffer, "\n");
+        asio::read_until(socket, buffer, "\r\n\r\n");
         
         std::string request_str{
             std::istreambuf_iterator<char>(&buffer),
             std::istreambuf_iterator<char>()
         };
         
-        auto response = handle_request(request_str);
+        auto json_str = parse_http_request(request_str);
+        auto response = handle_request(json_str);
+        
         json response_json = {
             {"jsonrpc", response.jsonrpc},
             {"id", response.id}
@@ -57,12 +59,25 @@ void RpcServer::handle_connection(asio::ip::tcp::socket socket) {
             response_json["error"] = *response.error;
         }
         
-        std::string response_str = response_json.dump() + "\n";
+        std::string response_str = make_http_response(response_json.dump());
         asio::write(socket, asio::buffer(response_str));
     }
     catch (const std::exception& e) {
         std::cerr << "Connection error: " << e.what() << std::endl;
     }
+}
+
+std::string RpcServer::parse_http_request(const std::string& raw_request) {
+    auto body_pos = raw_request.find("\r\n\r\n");
+    return body_pos != std::string::npos ? 
+        raw_request.substr(body_pos + 4) : raw_request;
+}
+
+std::string RpcServer::make_http_response(const std::string& body) {
+    return "HTTP/1.1 200 OK\r\n"
+           "Content-Type: application/json\r\n"
+           "Content-Length: " + std::to_string(body.length()) + "\r\n"
+           "\r\n" + body;
 }
 
 JsonRpcResponse RpcServer::handle_request(const std::string& request_str) {

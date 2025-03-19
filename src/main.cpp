@@ -16,6 +16,8 @@ int main() {
         });
         
         server.register_handler("add", [](const json& params) {
+            std::cout << "Adding numbers..." << std::endl;
+            
             int sum = 0;
             for (const auto& num : params) {
                 sum += num.get<int>();
