@@ -50,11 +50,18 @@ io.on('connection', (socket) => {
       clientId: clientId,
       socketId: socket.id,
       lastSeen: Date.now(),
+      player: clientData.player || {
+        x: 400,
+        y: 300,
+        color: `hsl(${Math.floor(Math.random() * 360)}, 100%, 50%)`,
+        size: 20,
+        name: `Player ${clientId.slice(-4)}`
+      },
       entities: []
     };
     
     // Send initial game state to client
-    socket.emit('gameState', {
+    io.emit('gameState', {
       players: Object.values(gameState.players)
     });
   });
@@ -65,6 +72,7 @@ io.on('connection', (socket) => {
     
     if (gameState.players[clientId]) {
       // Update client's state
+      gameState.players[clientId].player = clientState.player || gameState.players[clientId].player;
       gameState.players[clientId].entities = clientState.entities || [];
       gameState.players[clientId].lastSeen = Date.now();
     }
