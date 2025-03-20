@@ -1,81 +1,76 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>2D RTS Game</title>
-  <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/ui.css">
-  <!-- Import Three.js with a proper module specifier -->
-  <script type="importmap">
-    {
-      "imports": {
-        "three": "https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.module.js"
-      }
-    }
-  </script>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Spaceship Game</title>
+    <!-- Add import map for Three.js -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.158.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.158.0/examples/jsm/"
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="./css/controls.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #000;
+            color: #fff;
+            font-family: 'Arial', sans-serif;
+            touch-action: none;
+        }
+        
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        
+        #ui-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        #controls-info {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+        }
+        
+        /* Hide controls info on small screens */
+        @media (max-width: 768px) {
+            #controls-info {
+                display: none;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div id="game-container"></div>
-  
-  <!-- Update the debug overlay with more detailed camera controls -->
-  <div id="debug-overlay" style="position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); padding: 10px; border-radius: 5px; font-size: 12px;">
-    <p>Camera Controls:</p>
-    <ul>
-      <li>Left-click + drag: Rotate camera</li>
-      <li>Mouse wheel: Zoom in/out</li>
-      <li>WASD/Arrow keys: Move camera position</li>
-      <li>Q/E: Move camera up/down</li>
-      <li>R: Reset camera</li>
-    </ul>
-  </div>
-  
-  <!-- Load game scripts -->
-  <script type="module">
-    import * as THREE from 'three';
-    import { GameEngine } from './js/engine/core.js';
-    import { cameraSystem } from './js/rts/systems/cameraSystem.js';
-    import { backgroundSystem } from './js/rts/systems/backgroundSystem.js';
+    <div id="ui-container"></div>
     
-    // Make THREE globally available for other modules
-    window.THREE = THREE;
+    <div id="controls-info">
+        <h3>Controls:</h3>
+        <p>WASD - Move Camera</p>
+        <p>QE - Move Up/Down</p>
+        <p>Mouse Drag - Rotate Camera</p>
+        <p>Mouse Wheel - Adjust Speed</p>
+        <p>P - Toggle Physics Debug Mode</p>
+        <p>G - Toggle Gravity</p>
+    </div>
     
-    // Game instance
-    let game;
-    let selectedEntities = [];
-    
-    // Make these globally available
-    window.selectedEntities = selectedEntities;
-    window.updateSelectionUI = function() {
-      const buildingSystem = game.getSystem('building');
-      if (buildingSystem && buildingSystem.updateSelectionUI) {
-        buildingSystem.updateSelectionUI();
-      }
-    };
-    
-    
-    window.addEventListener('DOMContentLoaded', () => {
-      initGame();
-    });
-    
-    function initGame() {
-      // Create game engine with darker background
-      game = new GameEngine({
-        parentElement: document.getElementById('game-container'),
-        backgroundColor: 0x010103 // Extremely dark blue-black
-      });
-      
-      // Make game globally available
-      window.game = game;
-
-      game.addSystem(backgroundSystem); // Keep the space background
-      game.addSystem(cameraSystem);     // Keep camera controls
-
-      game.start();
-    }
-    
-  </script>
-  
+    <!-- Load the main application script -->
+    <script type="module" src="./js/app.js"></script>
 </body>
-</html> 
+</html>

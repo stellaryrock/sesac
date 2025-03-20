@@ -1,182 +1,211 @@
 /**
- * RTS Game Engine Core
- * Handles the main game loop, scene management, and rendering
+ * Space Travel Game Engine
+ * A modular game engine built with Three.js for space exploration games
  */
 import * as THREE from 'three';
-import { EventEmitter } from './eventEmitter.js';
 
 export class GameEngine {
-  constructor(config = {}) {
-    // Configuration with defaults
-    this.config = {
-      width: config.width || window.innerWidth,
-      height: config.height || window.innerHeight,
-      backgroundColor: config.backgroundColor || 0x000000,
-      parentElement: config.parentElement || document.body,
-      ...config
+  constructor(options = {}) {
+    // Default options
+    this.options = {
+      parentElement: document.body,
+      backgroundColor: 0x000000,
+      ...options
     };
     
-    // Core properties
+    // Initialize properties
+    this.systems = [];
+    this.entities = [];
+    this.customUpdates = [];
     this.scene = new THREE.Scene();
-    this.camera = this.createCamera();
-    this.renderer = this.createRenderer();
     this.clock = new THREE.Clock();
-    this.events = new EventEmitter();
     this.isRunning = false;
     
-    // Game state
-    this.entities = new Map();
-    this.systems = new Map();
+    // Create renderer
+    this.renderer = new THREE.WebGLRenderer({ antialias: true });
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.renderer.setClearColor(this.options.backgroundColor);
+    this.renderer.setPixelRatio(window.devicePixelRatio);
     
-    // Add this to the GameEngine class constructor or init method
-    this.cameraSystem = null;
+    // Add to DOM
+    this.options.parentElement.appendChild(this.renderer.domElement);
     
-    // Initialize
-    this.init();
+    // Initialize physics properties
+    this.physicsEnabled = false;
+    this.physicsEntities = [];
   }
   
-  init() {
-    // Set up scene
-    this.scene.background = new THREE.Color(0x010103);
-    
-    // Add renderer to DOM
-    this.config.parentElement.appendChild(this.renderer.domElement);
-    
-    // Handle window resize
-    window.addEventListener('resize', () => this.resize());
+  // Add a custom update function
+  addCustomUpdate(updateFn) {
+    if (typeof updateFn === 'function') {
+      this.customUpdates.push(updateFn);
+    }
+    return this;
   }
   
-  createCamera() {
-    // Create orthographic camera for 2D
-    const aspectRatio = this.config.width / this.config.height;
-    const viewSize = 1000;
-    const camera = new THREE.OrthographicCamera(
-      -viewSize * aspectRatio / 2,
-      viewSize * aspectRatio / 2,
-      viewSize / 2,
-      -viewSize / 2,
-      1,
-      1000
-    );
-    camera.position.z = 10;
-    return camera;
+  // Remove a custom update function
+  removeCustomUpdate(updateFn) {
+    const index = this.customUpdates.indexOf(updateFn);
+    if (index !== -1) {
+      this.customUpdates.splice(index, 1);
+    }
+    return this;
   }
   
-  createRenderer() {
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(this.config.width, this.config.height);
-    return renderer;
-  }
-  
-  resize(width = window.innerWidth, height = window.innerHeight) {
-    this.config.width = width;
-    this.config.height = height;
+  // Add a system to the engine
+  addSystem(system) {
+    this.systems.push(system);
     
-    // Update camera
-    const aspectRatio = width / height;
-    const viewSize = 1000;
-    this.camera.left = -viewSize * aspectRatio / 2;
-    this.camera.right = viewSize * aspectRatio / 2;
-    this.camera.top = viewSize / 2;
-    this.camera.bottom = -viewSize / 2;
-    this.camera.updateProjectionMatrix();
+    // Initialize the system
+    if (system.init) {
+      system.init(this);
+    }
     
-    // Update renderer
-    this.renderer.setSize(width, height);
+    // Check if this is a physics system
+    if (system.name === 'physics') {
+      this.physicsEnabled = true;
+      console.log('Physics system enabled');
+    }
+    
+    return system;
   }
   
+  // Get a system by name
+  getSystem(name) {
+    return this.systems.find(system => system.name === name);
+  }
+  
+  // Add an entity to the engine
+  addEntity(entity) {
+    this.entities.push(entity);
+    
+    // Add to scene if it's a THREE.Object3D
+    if (entity instanceof THREE.Object3D) {
+      this.scene.add(entity);
+    }
+    
+    // Register with physics system if available and entity has physics component
+    if (this.physicsEnabled && entity.physics) {
+      const physicsSystem = this.getSystem('physics');
+      if (physicsSystem) {
+        physicsSystem.registerObject(entity);
+      }
+    }
+    
+    return entity;
+  }
+  
+  // Remove an entity from the engine
+  removeEntity(entity) {
+    const index = this.entities.indexOf(entity);
+    if (index !== -1) {
+      this.entities.splice(index, 1);
+      
+      // Remove from scene if it's a THREE.Object3D
+      if (entity instanceof THREE.Object3D) {
+        this.scene.remove(entity);
+      }
+      
+      // Unregister from physics system if available
+      if (this.physicsEnabled && entity.physics) {
+        const physicsSystem = this.getSystem('physics');
+        if (physicsSystem) {
+          physicsSystem.removeObject(entity);
+        }
+      }
+    }
+    
+    return entity;
+  }
+  
+  // Create a physics-enabled entity
+  createPhysicsEntity(options = {}) {
+    // Default options
+    const config = {
+      geometry: new THREE.BoxGeometry(1, 1, 1),
+      material: new THREE.MeshBasicMaterial({ color: 0xffffff }),
+      position: new THREE.Vector3(0, 0, 0),
+      mass: 1.0,
+      isStatic: false,
+      collisionRadius: 1.0,
+      ...options
+    };
+    
+    // Create mesh
+    const entity = new THREE.Mesh(config.geometry, config.material);
+    entity.position.copy(config.position);
+    
+    // Add physics component
+    entity.physics = {
+      mass: config.mass,
+      velocity: new THREE.Vector3(0, 0, 0),
+      acceleration: new THREE.Vector3(0, 0, 0),
+      isStatic: config.isStatic,
+      collisionRadius: config.collisionRadius,
+      applyGravity: true,
+      applyCollisions: true
+    };
+    
+    // Add to engine
+    this.addEntity(entity);
+    
+    return entity;
+  }
+  
+  // Handle window resize
+  handleResize() {
+    if (this.camera) {
+      this.camera.aspect = window.innerWidth / window.innerHeight;
+      this.camera.updateProjectionMatrix();
+    }
+    
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
+  }
+  
+  // Start the game loop
   start() {
     if (this.isRunning) return;
     
     this.isRunning = true;
     this.clock.start();
-    this.events.emit('gameStart');
-    this.update();
+    this.animate();
+    
+    console.log('Game engine started');
   }
   
+  // Stop the game loop
   stop() {
     this.isRunning = false;
     this.clock.stop();
-    this.events.emit('gameStop');
+    
+    console.log('Game engine stopped');
   }
   
-  update() {
+  // Animation loop
+  animate() {
     if (!this.isRunning) return;
+    
+    // Request next frame
+    requestAnimationFrame(() => this.animate());
     
     // Calculate delta time
     const deltaTime = this.clock.getDelta();
     
     // Update all systems
-    for (const system of this.systems.values()) {
-      system.update(deltaTime, this);
+    for (const system of this.systems) {
+      if (system.update) {
+        system.update(deltaTime, this);
+      }
     }
     
-    // Render scene
-    this.renderer.render(this.scene, this.camera);
-    
-    // Continue game loop
-    requestAnimationFrame(() => this.update());
-  }
-  
-  // Entity management
-  addEntity(entity) {
-    this.entities.set(entity.id, entity);
-    
-    // Add to scene if it has a mesh
-    if (entity.mesh) {
-      this.scene.add(entity.mesh);
+    // Run custom update functions
+    for (const updateFn of this.customUpdates) {
+      updateFn(deltaTime, this);
     }
     
-    this.events.emit('entityAdded', entity);
-    return entity;
-  }
-  
-  removeEntity(entityId) {
-    const entity = this.entities.get(entityId);
-    if (!entity) return false;
-    
-    // Remove from scene if it has a mesh
-    if (entity.mesh) {
-      this.scene.remove(entity.mesh);
+    // Render the scene
+    if (this.camera) {
+      this.renderer.render(this.scene, this.camera);
     }
-    
-    this.entities.delete(entityId);
-    this.events.emit('entityRemoved', entity);
-    return true;
-  }
-  
-  getEntity(entityId) {
-    return this.entities.get(entityId);
-  }
-  
-  // System management
-  addSystem(system) {
-    this.systems.set(system.name, system);
-    
-    // Store reference to camera system
-    if (system.name === 'camera') {
-      this.cameraSystem = system;
-    }
-    
-    // Initialize the system
-    if (typeof system.init === 'function') {
-      system.init(this);
-    }
-    
-    this.events.emit('systemAdded', system);
-    return system;
-  }
-  
-  removeSystem(systemName) {
-    const system = this.systems.get(systemName);
-    if (!system) return false;
-    
-    this.systems.delete(systemName);
-    this.events.emit('systemRemoved', system);
-    return true;
-  }
-  
-  getSystem(systemName) {
-    return this.systems.get(systemName);
   }
 } 

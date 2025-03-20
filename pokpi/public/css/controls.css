@@ -1,0 +1,81 @@
+/* Camera Controls Styling */
+.control-panel {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+  padding: 10px;
+  user-select: none;
+}
+
+.movement-grid {
+  display: grid;
+  grid-template-rows: repeat(3, 1fr);
+  gap: 5px;
+}
+
+.control-row {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+}
+
+.control-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+  background-color: rgba(50, 50, 80, 0.8);
+  color: white;
+  border: 1px solid rgba(100, 100, 150, 0.8);
+  font-size: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.control-btn:hover {
+  background-color: rgba(70, 70, 100, 0.8);
+}
+
+.control-btn:active {
+  background-color: rgba(100, 100, 150, 0.8);
+}
+
+.mode-btn {
+  font-size: 12px;
+  width: 80px;
+}
+
+/* Mobile-specific adjustments */
+@media (max-width: 768px) {
+  .control-btn {
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+  }
+  
+  .mode-btn {
+    font-size: 14px;
+    width: 90px;
+  }
+  
+  .control-panel {
+    bottom: 30px;
+    right: 30px;
+  }
+}
+
+/* Hide controls when not on touch device */
+@media (hover: hover) and (pointer: fine) {
+  .control-panel {
+    opacity: 0.3;
+    transition: opacity 0.3s;
+  }
+  
+  .control-panel:hover {
+    opacity: 1;
+  }
+} 
