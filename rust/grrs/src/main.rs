@@ -20,4 +20,6 @@ fn main() {
             println!("{}", line);
         }
     }
+
+    Ok(())
 }
