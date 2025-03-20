@@ -32,68 +32,59 @@ app.use('/api', apiRoutes);
 app.use(express.static(PUBLIC_DIR));
 
 // SPA fallback - serve index.html for any route not found
-app.get('*', (req, res) => {
+app.get('/', (req, res) => {
   res.sendFile(path.join(PUBLIC_DIR, 'index.html'));
 });
 
 // WebSocket handling for game state sync
 io.on('connection', (socket) => {
-  console.log(`New client connected: ${socket.id}`);
+  console.log('Player connected:', socket.id);
   
-  // Handle client registration
-  socket.on('register', (clientData) => {
-    const clientId = clientData.clientId;
-    console.log(`Client registered: ${clientId}`);
+  // Handle player joining
+  socket.on('playerJoin', (playerData) => {
+    console.log('Player joined:', playerData.username);
     
-    // Store this client in game state
-    gameState.players[clientId] = {
-      clientId: clientId,
-      socketId: socket.id,
-      lastSeen: Date.now(),
-      player: clientData.player || {
-        x: 400,
-        y: 300,
-        color: `hsl(${Math.floor(Math.random() * 360)}, 100%, 50%)`,
-        size: 20,
-        name: `Player ${clientId.slice(-4)}`
-      },
-      entities: []
+    // Store player data
+    gameState.players[socket.id] = {
+      id: socket.id,
+      username: playerData.username,
+      position: playerData.position,
+      color: playerData.color
     };
     
-    // Send initial game state to client
-    io.emit('gameState', {
-      players: Object.values(gameState.players)
-    });
+    // Inform other players about new player
+    socket.broadcast.emit('newPlayer', gameState.players[socket.id]);
+    
+    // Send existing players to new player
+    socket.emit('existingPlayers', gameState.players);
   });
   
-  // Handle client state updates
-  socket.on('updateState', (clientState) => {
-    const clientId = clientState.clientId;
-    
-    if (gameState.players[clientId]) {
-      // Update client's state
-      gameState.players[clientId].player = clientState.player || gameState.players[clientId].player;
-      gameState.players[clientId].entities = clientState.entities || [];
-      gameState.players[clientId].lastSeen = Date.now();
+  // Handle player updates
+  socket.on('playerUpdate', (data) => {
+    // Update player data
+    if (gameState.players[socket.id]) {
+      gameState.players[socket.id].position = data.position;
+      if (data.rotation !== undefined) {
+        gameState.players[socket.id].rotation = data.rotation;
+      }
+      if (data.animation !== undefined) {
+        gameState.players[socket.id].animation = data.animation;
+      }
     }
     
-    // Broadcast game state to all clients
-    io.emit('gameState', {
-      players: Object.values(gameState.players)
-    });
+    // Broadcast to other players
+    socket.broadcast.emit('playerUpdate', data);
   });
   
-  // Handle disconnects
+  // Handle disconnection
   socket.on('disconnect', () => {
-    console.log(`Client disconnected: ${socket.id}`);
+    console.log('Player disconnected:', socket.id);
     
-    // Find and remove the disconnected client
-    Object.keys(gameState.players).forEach(clientId => {
-      if (gameState.players[clientId].socketId === socket.id) {
-        console.log(`Removing client: ${clientId}`);
-        delete gameState.players[clientId];
-      }
-    });
+    // Remove player from list
+    delete gameState.players[socket.id];
+    
+    // Inform others
+    io.emit('playerLeft', socket.id);
   });
 });
 

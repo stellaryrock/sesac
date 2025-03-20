@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pokpi Game</title>
+    <title>2D RTS Game</title>
     <style>
         body, html {
             margin: 0;
@@ -11,42 +11,235 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
+            font-family: Arial, sans-serif;
             background-color: #222;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            color: #fff;
         }
         
-        #game-canvas {
-            background-color: #000;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-            max-width: 100%;
-            max-height: 100%;
+        #game-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        
+        #ui {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        #resources {
+            display: flex;
+            gap: 20px;
+        }
+        
+        #actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        button {
+            padding: 5px 10px;
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background-color: #45a049;
         }
         
         #loading {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-family: Arial, sans-serif;
-            font-size: 24px;
-            color: white;
-            background-color: rgba(0, 0, 0, 0.7);
-            padding: 20px 40px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.5s;
+        }
+        
+        #loading h1 {
+            color: #fff;
+            margin-bottom: 20px;
+        }
+        
+        .progress-bar {
+            width: 300px;
+            height: 20px;
+            background: #333;
             border-radius: 10px;
-            z-index: 100;
+            overflow: hidden;
+        }
+        
+        .progress {
+            width: 0%;
+            height: 100%;
+            background: #4CAF50;
+            transition: width 0.3s;
         }
     </style>
 </head>
 <body>
-    <div id="loading">Loading...</div>
-    <canvas id="game-canvas"></canvas>
+    <div id="game-container"></div>
     
-    <!-- Socket.io client library -->
-    <script src="/socket.io/socket.io.js"></script>
+    <div id="ui">
+        <div id="resources">
+            <div id="gold">Gold: 500</div>
+            <div id="wood">Wood: 300</div>
+            <div id="stone">Stone: 200</div>
+        </div>
+        <div id="actions">
+            <button id="build-barracks">Build Barracks</button>
+            <button id="train-worker">Train Worker</button>
+        </div>
+    </div>
     
-    <!-- Game script -->
-    <script type="module" src="js/game.js"></script>
+    <div id="loading">
+        <h1>Loading Game...</h1>
+        <div class="progress-bar">
+            <div class="progress" id="progress-bar"></div>
+        </div>
+    </div>
+    
+    <!-- Import Three.js -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.152.2/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.152.2/examples/jsm/"
+            }
+        }
+    </script>
+    
+    <!-- Import game modules -->
+    <script type="module">
+        import * as THREE from 'three';
+        import RTSGame from './js/rts/rtsGame.js';
+        
+        // Make THREE globally available for other modules
+        window.THREE = THREE;
+        
+        // Initialize loading progress
+        const progressBar = document.getElementById('progress-bar');
+        const loadingScreen = document.getElementById('loading');
+        
+        // UI elements
+        const goldDisplay = document.getElementById('gold');
+        const woodDisplay = document.getElementById('wood');
+        const stoneDisplay = document.getElementById('stone');
+        const buildBarracksButton = document.getElementById('build-barracks');
+        const trainWorkerButton = document.getElementById('train-worker');
+        
+        // Set up loading progress
+        function updateLoadingProgress(progress) {
+            progressBar.style.width = `${progress * 100}%`;
+            
+            if (progress >= 1) {
+                setTimeout(() => {
+                    loadingScreen.style.opacity = '0';
+                    setTimeout(() => {
+                        loadingScreen.style.display = 'none';
+                    }, 500);
+                }, 500);
+            }
+        }
+        
+        // Initialize game when page loads
+        window.addEventListener('load', () => {
+            // Start loading
+            updateLoadingProgress(0.2);
+            
+            // Initialize game
+            const gameContainer = document.getElementById('game-container');
+            const game = new RTSGame(gameContainer);
+            
+            // Update resource displays
+            window.onResourceCollected = function(type, amount) {
+                game.playerResources[type] += amount;
+                updateResourceDisplay();
+            };
+            
+            function updateResourceDisplay() {
+                goldDisplay.textContent = `Gold: ${game.playerResources.gold}`;
+                woodDisplay.textContent = `Wood: ${game.playerResources.wood}`;
+                stoneDisplay.textContent = `Stone: ${game.playerResources.stone}`;
+            }
+            
+            // Set up button actions
+            buildBarracksButton.addEventListener('click', () => {
+                // Check if we have enough resources
+                if (game.playerResources.wood >= 150 && game.playerResources.stone >= 100) {
+                    // Find a selected worker
+                    const worker = game.selectedEntities.find(entity => 
+                        entity instanceof Unit && entity.type === 'worker'
+                    );
+                    
+                    if (worker) {
+                        // Deduct resources
+                        game.playerResources.wood -= 150;
+                        game.playerResources.stone -= 100;
+                        updateResourceDisplay();
+                        
+                        // Create building blueprint
+                        const barracksOptions = {
+                            type: 'barracks',
+                            player: 0,
+                            x: worker.position.x + 100,
+                            y: worker.position.y,
+                            isBuilt: false
+                        };
+                        
+                        const barracks = new Building(barracksOptions);
+                        game.addBuilding(barracks);
+                        
+                        // Command worker to build
+                        worker.build(barracks);
+                    } else {
+                        alert('Select a worker first!');
+                    }
+                } else {
+                    alert('Not enough resources! Barracks costs 150 wood and 100 stone.');
+                }
+            });
+            
+            trainWorkerButton.addEventListener('click', () => {
+                // Find a selected base
+                const base = game.selectedEntities.find(entity => 
+                    entity instanceof Building && entity.type === 'base'
+                );
+                
+                if (base) {
+                    // Check if we have enough resources
+                    if (game.playerResources.gold >= 50) {
+                        // Deduct resources
+                        game.playerResources.gold -= 50;
+                        updateResourceDisplay();
+                        
+                        // Add worker to production queue
+                        base.addToQueue('worker');
+                    } else {
+                        alert('Not enough resources! Worker costs 50 gold.');
+                    }
+                } else {
+                    alert('Select a base first!');
+                }
+            });
+            
+            // Finish loading
+            updateLoadingProgress(1);
+        });
+    </script>
 </body>
 </html> 
