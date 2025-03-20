@@ -1,10 +1,12 @@
+/**
+ * Building Interface
+ * Interface for all building entities
+ */
+import * as THREE from 'three';
 import { createEntity } from './entity.js';
 
-/**
- * Building interface for RTS game
- */
-const BuildingInterface = {
-  // Building-specific properties
+// Building interface definition
+export const BuildingInterface = {
   width: Number,
   height: Number,
   buildProgress: Number,
@@ -15,52 +17,51 @@ const BuildingInterface = {
   productionType: String,
   resources: Object,
   
-  // Building-specific methods
-  build: (amount) => {},
-  addToQueue: (unitType) => {},
-  getProductionTypes: () => [],
-  getProductionCost: (unitType) => Number,
-  addResource: (type, amount) => {},
-  produceUnit: (gameState) => {}
+  build: Function,
+  addToQueue: Function,
+  getProductionTypes: Function,
+  getProductionCost: Function,
+  addResource: Function,
+  produceUnit: Function
 };
 
 // Building types data
-const BUILDING_TYPES = {
-  BASE: {
-    type: 'base',
-    width: 3,
-    height: 3,
-    health: 1000,
-    maxHealth: 1000,
-    buildCost: 200,
-    productionTypes: ['worker'],
+export const BUILDING_TYPES = {
+  COMMAND_CENTER: {
+    type: 'commandCenter',
+    width: 4,
+    height: 4,
+    health: 1500,
+    maxHealth: 1500,
+    buildCost: 400,
+    productionTypes: ['drone', 'scout'],
     color: 0x3498db,
-    description: 'Main base building. Can produce workers.'
+    description: 'Main space station hub. Can produce worker drones and scout ships.'
   },
-  BARRACKS: {
-    type: 'barracks',
+  RESEARCH_LAB: {
+    type: 'researchLab',
     width: 2,
     height: 2,
     health: 500,
     maxHealth: 500,
     buildCost: 150,
-    productionTypes: ['soldier', 'archer'],
-    color: 0xe74c3c,
-    description: 'Military building. Can produce combat units.'
+    productionTypes: ['upgrade'],
+    color: 0x9b59b6,
+    description: 'Scientific facility for researching new technologies.'
   },
-  STABLE: {
-    type: 'stable',
-    width: 2,
+  SHIPYARD: {
+    type: 'shipyard',
+    width: 3,
     height: 3,
-    health: 400,
-    maxHealth: 400,
-    buildCost: 180,
-    productionTypes: ['cavalry'],
-    color: 0xf39c12,
-    description: 'Produces mounted units.'
+    health: 800,
+    maxHealth: 800,
+    buildCost: 300,
+    productionTypes: ['fighter', 'cruiser'],
+    color: 0xe74c3c,
+    description: 'Produces combat spacecraft for your fleet.'
   },
-  TOWER: {
-    type: 'tower',
+  DEFENSE_SATELLITE: {
+    type: 'defenseSatellite',
     width: 1,
     height: 1,
     health: 300,
@@ -68,10 +69,10 @@ const BUILDING_TYPES = {
     buildCost: 120,
     productionTypes: [],
     color: 0x95a5a6,
-    description: 'Defensive structure. Attacks nearby enemies.'
+    description: 'Orbital defense platform that attacks nearby enemies.'
   },
-  FARM: {
-    type: 'farm',
+  HYDROPONICS_BAY: {
+    type: 'hydroponicsBay',
     width: 2,
     height: 2,
     health: 200,
@@ -79,38 +80,124 @@ const BUILDING_TYPES = {
     buildCost: 100,
     productionTypes: [],
     color: 0x2ecc71,
-    description: 'Generates food resources over time.'
+    description: 'Generates food resources through advanced hydroponics.'
+  },
+  MINING_STATION: {
+    type: 'miningStation',
+    width: 2,
+    height: 2,
+    health: 300,
+    maxHealth: 300,
+    buildCost: 150,
+    productionTypes: [],
+    color: 0x7f8c8d,
+    description: 'Extracts minerals from nearby asteroids.'
+  },
+  SOLAR_POWER_PLANT: {
+    type: 'solarPowerPlant',
+    width: 3,
+    height: 3,
+    health: 400,
+    maxHealth: 400,
+    buildCost: 200,
+    productionTypes: [],
+    description: 'Collects solar energy to power your space colony.'
+  },
+  WARP_GATE: {
+    type: 'warpGate',
+    width: 4,
+    height: 4,
+    health: 600,
+    maxHealth: 600,
+    buildCost: 500,
+    productionTypes: ['transport'],
+    color: 0xf39c12,
+    description: 'Allows faster-than-light travel between star systems.'
+  },
+  SHIELD_GENERATOR: {
+    type: 'shieldGenerator',
+    width: 2,
+    height: 2,
+    health: 350,
+    maxHealth: 350,
+    buildCost: 250,
+    productionTypes: [],
+    color: 0x3498db,
+    description: 'Projects a defensive shield around nearby structures.'
   }
 };
 
 // Factory function for creating buildings
-const createBuilding = (config) => {
-  const buildingType = BUILDING_TYPES[config.type.toUpperCase()] || BUILDING_TYPES.BASE;
-  
+export function createBuilding(config = {}) {
   // Create base entity
-  const building = createEntity({
-    ...config,
-    health: buildingType.health,
-    maxHealth: buildingType.maxHealth,
-    zIndex: 0.5 // Buildings are above terrain but below units
-  });
+  const entity = createEntity(config);
   
-  // Add building-specific properties
-  return {
-    ...building,
-    width: buildingType.width,
-    height: buildingType.height,
-    buildProgress: config.buildProgress || 0,
-    buildCost: buildingType.buildCost,
-    isBuilt: config.isBuilt || false,
-    productionQueue: [],
-    productionProgress: 0,
-    productionType: null,
-    resources: {
-      gold: 0,
-      wood: 0,
-      stone: 0,
-      food: 0
+  // Get building type configuration
+  const typeKey = config.type.toUpperCase().replace(/\s+/g, '_');
+  const typeConfig = BUILDING_TYPES[typeKey] || {};
+  
+  // Merge with building interface
+  const building = {
+    ...entity,
+    
+    // Building properties
+    isBuilding: true,
+    width: config.width || typeConfig.width || 1,
+    height: config.height || typeConfig.height || 1,
+    buildProgress: config.buildProgress !== undefined ? config.buildProgress : 100,
+    buildCost: config.buildCost || typeConfig.buildCost || 100,
+    isBuilt: config.isBuilt !== undefined ? config.isBuilt : true,
+    productionQueue: config.productionQueue || [],
+    productionProgress: config.productionProgress || 0,
+    productionType: config.productionType || null,
+    resources: config.resources || {},
+    productionTypes: typeConfig.productionTypes || [],
+    description: typeConfig.description || 'A building',
+    
+    // Selection handling
+    setSelected(selected) {
+      this.isSelected = selected;
+      
+      // Update visual appearance when selected
+      if (this.mesh) {
+        if (selected) {
+          // Add selection indicator
+          if (!this.selectionIndicator) {
+            // Create selection ring
+            const ringGeometry = new THREE.RingGeometry(
+              Math.max(this.width, this.height) * 20,
+              Math.max(this.width, this.height) * 22,
+              32
+            );
+            const ringMaterial = new THREE.MeshBasicMaterial({
+              color: 0x3498db,
+              side: THREE.DoubleSide,
+              transparent: true,
+              opacity: 0.7
+            });
+            this.selectionIndicator = new THREE.Mesh(ringGeometry, ringMaterial);
+            this.selectionIndicator.rotation.x = -Math.PI / 2; // Lay flat
+            this.selectionIndicator.position.z = 1; // Slightly above ground
+            this.mesh.add(this.selectionIndicator);
+            
+            // Animate the selection indicator
+            const animate = () => {
+              if (!this.isSelected || !this.selectionIndicator) return;
+              
+              this.selectionIndicator.rotation.z += 0.01;
+              requestAnimationFrame(animate);
+            };
+            
+            animate();
+          }
+        } else {
+          // Remove selection indicator
+          if (this.selectionIndicator) {
+            this.mesh.remove(this.selectionIndicator);
+            this.selectionIndicator = null;
+          }
+        }
+      }
     },
     
     // Create visual representation
@@ -131,132 +218,141 @@ const createBuilding = (config) => {
         0xffff00  // Yellow
       ];
       
-      const baseColor = playerColors[this.player % playerColors.length];
-      const buildingColor = buildingType.color;
+      const baseColor = typeConfig.color || 0x000000;
+      const playerColor = playerColors[this.player] || playerColors[0];
       
-      // Mix colors
-      const color = new THREE.Color(baseColor).lerp(new THREE.Color(buildingColor), 0.5);
+      // Mix building type color with player color
+      const mixedColor = new THREE.Color(baseColor).lerp(
+        new THREE.Color(playerColor),
+        0.3
+      );
       
-      const material = new THREE.MeshBasicMaterial({ 
-        color: color.getHex(),
+      const material = new THREE.MeshBasicMaterial({
+        color: mixedColor,
         transparent: true,
-        opacity: this.isBuilt ? 1.0 : 0.5
+        opacity: this.isBuilt ? 1.0 : 0.6
       });
       
       this.mesh = new THREE.Mesh(geometry, material);
-      this.mesh.position.set(this.position.x, this.position.y, 0.5);
+      this.mesh.position.set(this.position.x, this.position.y, this.zIndex);
       
-      // Add selection indicator
-      this.createSelectionIndicator();
+      // Add to scene
+      scene.add(this.mesh);
       
-      // Add health bar
+      // Create health bar
       this.createHealthBar();
       
-      // Add build progress bar if not built
+      // Create build progress bar if not built
       if (!this.isBuilt) {
-        this.createBuildBar();
+        this.createBuildProgressBar();
       }
-      
-      // Store reference to this building
-      this.mesh.userData.entity = this;
-      
-      scene.add(this.mesh);
     },
     
-    createSelectionIndicator() {
-      const tileSize = 32;
-      const selectionGeometry = new THREE.RingGeometry(
-        Math.max(this.width, this.height) * tileSize * 0.6,
-        Math.max(this.width, this.height) * tileSize * 0.65,
-        32
-      );
-      const selectionMaterial = new THREE.MeshBasicMaterial({ 
-        color: 0xffffff,
-        side: THREE.DoubleSide
-      });
-      this.selectionMesh = new THREE.Mesh(selectionGeometry, selectionMaterial);
-      this.selectionMesh.position.set(0, 0, 0.1);
-      this.selectionMesh.visible = false;
-      this.mesh.add(this.selectionMesh);
-    },
-    
+    // Create health bar
     createHealthBar() {
-      const healthBarWidth = this.width * 32;
-      const healthBarHeight = 4;
+      const tileSize = 32;
+      const barWidth = this.width * tileSize;
+      const barHeight = 5;
       
       // Background
-      const bgGeometry = new THREE.PlaneGeometry(healthBarWidth, healthBarHeight);
+      const bgGeometry = new THREE.PlaneGeometry(barWidth, barHeight);
       const bgMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
-      this.healthBarBg = new THREE.Mesh(bgGeometry, bgMaterial);
-      this.healthBarBg.position.set(0, this.height * 16 + 8, 0.1);
-      this.mesh.add(this.healthBarBg);
+      const bgMesh = new THREE.Mesh(bgGeometry, bgMaterial);
+      bgMesh.position.set(0, this.height * tileSize / 2 + 10, 0.1);
       
-      // Foreground (health)
-      const fgGeometry = new THREE.PlaneGeometry(healthBarWidth, healthBarHeight);
-      const fgMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-      this.healthBarFg = new THREE.Mesh(fgGeometry, fgMaterial);
-      this.healthBarFg.position.set(0, 0, 0.1);
-      this.healthBarBg.add(this.healthBarFg);
+      // Health bar
+      const healthGeometry = new THREE.PlaneGeometry(barWidth, barHeight);
+      const healthMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+      this.healthBarMesh = new THREE.Mesh(healthGeometry, healthMaterial);
+      this.healthBarMesh.position.set(0, 0, 0.1);
       
+      // Add to mesh
+      bgMesh.add(this.healthBarMesh);
+      this.mesh.add(bgMesh);
+      
+      // Update health bar
       this.updateHealthBar();
     },
     
-    createBuildBar() {
-      const buildBarWidth = this.width * 32;
-      const buildBarHeight = 4;
-      
-      // Background
-      const bgGeometry = new THREE.PlaneGeometry(buildBarWidth, buildBarHeight);
-      const bgMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
-      this.buildBarBg = new THREE.Mesh(bgGeometry, bgMaterial);
-      this.buildBarBg.position.set(0, this.height * 16 + 16, 0.1);
-      this.mesh.add(this.buildBarBg);
-      
-      // Foreground (build progress)
-      const fgGeometry = new THREE.PlaneGeometry(buildBarWidth, buildBarHeight);
-      const fgMaterial = new THREE.MeshBasicMaterial({ color: 0xf39c12 });
-      this.buildBarFg = new THREE.Mesh(fgGeometry, fgMaterial);
-      this.buildBarFg.position.set(0, 0, 0.1);
-      this.buildBarBg.add(this.buildBarFg);
-      
-      this.updateBuildBar();
-    },
-    
+    // Update health bar
     updateHealthBar() {
-      if (!this.healthBarFg) return;
+      if (!this.healthBarMesh) return;
       
       const healthPercent = this.health / this.maxHealth;
-      this.healthBarFg.scale.x = healthPercent;
-      this.healthBarFg.position.x = (healthPercent - 1) * (this.width * 16);
-    },
-    
-    updateBuildBar() {
-      if (!this.buildBarFg) return;
+      this.healthBarMesh.scale.x = healthPercent;
+      this.healthBarMesh.position.x = (healthPercent - 1) * (this.width * 16);
       
-      const buildPercent = this.buildProgress / this.buildCost;
-      this.buildBarFg.scale.x = buildPercent;
-      this.buildBarFg.position.x = (buildPercent - 1) * (this.width * 16);
+      // Change color based on health
+      const material = this.healthBarMesh.material;
+      if (healthPercent > 0.6) {
+        material.color.setHex(0x00ff00); // Green
+      } else if (healthPercent > 0.3) {
+        material.color.setHex(0xffff00); // Yellow
+      } else {
+        material.color.setHex(0xff0000); // Red
+      }
     },
     
+    // Create build progress bar
+    createBuildProgressBar() {
+      const tileSize = 32;
+      const barWidth = this.width * tileSize;
+      const barHeight = 5;
+      
+      // Background
+      const bgGeometry = new THREE.PlaneGeometry(barWidth, barHeight);
+      const bgMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+      const bgMesh = new THREE.Mesh(bgGeometry, bgMaterial);
+      bgMesh.position.set(0, this.height * tileSize / 2 + 20, 0.1);
+      
+      // Progress bar
+      const progressGeometry = new THREE.PlaneGeometry(barWidth, barHeight);
+      const progressMaterial = new THREE.MeshBasicMaterial({ color: 0x0088ff });
+      this.buildProgressMesh = new THREE.Mesh(progressGeometry, progressMaterial);
+      this.buildProgressMesh.position.set(0, 0, 0.1);
+      
+      // Add to mesh
+      bgMesh.add(this.buildProgressMesh);
+      this.mesh.add(bgMesh);
+      
+      // Update progress bar
+      this.updateBuildProgress();
+    },
+    
+    // Update build progress bar
+    updateBuildProgress() {
+      if (!this.buildProgressMesh) return;
+      
+      const progressPercent = this.buildProgress / this.buildCost;
+      this.buildProgressMesh.scale.x = progressPercent;
+      this.buildProgressMesh.position.x = (progressPercent - 1) * (this.width * 16);
+    },
+    
+    // Build the building
     build(amount) {
       if (this.isBuilt) return false;
       
       this.buildProgress += amount;
-      this.updateBuildBar();
       
+      // Update progress bar
+      this.updateBuildProgress();
+      
+      // Check if building is complete
       if (this.buildProgress >= this.buildCost) {
         this.isBuilt = true;
         
         // Update appearance
-        if (this.mesh && this.mesh.material) {
+        if (this.mesh) {
           this.mesh.material.opacity = 1.0;
         }
         
-        // Remove build bar
-        if (this.buildBarBg) {
-          this.mesh.remove(this.buildBarBg);
-          this.buildBarBg = null;
-          this.buildBarFg = null;
+        // Remove build progress bar
+        if (this.buildProgressMesh && this.buildProgressMesh.parent) {
+          const parent = this.buildProgressMesh.parent;
+          if (parent.parent) {
+            parent.parent.remove(parent);
+          }
+          this.buildProgressMesh = null;
         }
         
         return true;
@@ -265,6 +361,7 @@ const createBuilding = (config) => {
       return false;
     },
     
+    // Add unit to production queue
     addToQueue(unitType) {
       if (!this.isBuilt) return false;
       
@@ -283,6 +380,7 @@ const createBuilding = (config) => {
       return true;
     },
     
+    // Start next production in queue
     startNextProduction() {
       if (this.productionQueue.length === 0) {
         this.productionType = null;
@@ -294,14 +392,17 @@ const createBuilding = (config) => {
       this.productionProgress = 0;
     },
     
+    // Get production types this building can produce
     getProductionTypes() {
-      return buildingType.productionTypes;
+      return this.productionTypes;
     },
     
+    // Get cost to produce a unit
     getProductionCost(unitType) {
       // Return cost to produce unit
       const costs = {
         worker: 50,
+        scout: 75,
         soldier: 100,
         archer: 120,
         cavalry: 150
@@ -310,6 +411,7 @@ const createBuilding = (config) => {
       return costs[unitType] || 0;
     },
     
+    // Add resources to building storage
     addResource(type, amount) {
       if (this.resources[type] !== undefined) {
         this.resources[type] += amount;
@@ -321,6 +423,7 @@ const createBuilding = (config) => {
       }
     },
     
+    // Update building state
     update(deltaTime, gameState) {
       // Call parent update
       super.update(deltaTime, gameState);
@@ -338,8 +441,121 @@ const createBuilding = (config) => {
           this.startNextProduction();
         }
       }
+      
+      // Special behavior for different building types
+      switch (this.type) {
+        case 'farm':
+          // Farms generate food over time
+          if (this.isBuilt) {
+            this.resources.food += 2 * deltaTime; // 2 food per second
+            
+            // Notify game manager
+            if (typeof window.onResourceGenerated === 'function') {
+              window.onResourceGenerated('food', 2 * deltaTime);
+            }
+          }
+          break;
+          
+        case 'mine':
+          // Mines generate resources over time
+          if (this.isBuilt) {
+            this.resources.gold += 1 * deltaTime; // 1 gold per second
+            
+            // Notify game manager
+            if (typeof window.onResourceGenerated === 'function') {
+              window.onResourceGenerated('gold', 1 * deltaTime);
+            }
+          }
+          break;
+          
+        case 'tower':
+          // Towers attack nearby enemies
+          if (this.isBuilt) {
+            this.updateTowerAttack(deltaTime, gameState);
+          }
+          break;
+      }
     },
     
+    // Tower attack behavior
+    updateTowerAttack(deltaTime, gameState) {
+      const attackRange = 200;
+      const attackDamage = 10;
+      const attackCooldown = 1; // 1 second between attacks
+      
+      // Decrease cooldown
+      if (this.attackCooldownRemaining > 0) {
+        this.attackCooldownRemaining -= deltaTime;
+        return;
+      }
+      
+      // Find closest enemy
+      let closestEnemy = null;
+      let closestDistance = attackRange;
+      
+      if (gameState && gameState.entities) {
+        for (const entity of gameState.entities.values()) {
+          // Skip if not an enemy
+          if (entity.player === this.player) continue;
+          
+          // Calculate distance
+          const dx = entity.position.x - this.position.x;
+          const dy = entity.position.y - this.position.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          
+          // Check if in range and closer than current closest
+          if (distance <= attackRange && distance < closestDistance) {
+            closestEnemy = entity;
+            closestDistance = distance;
+          }
+        }
+      }
+      
+      // Attack if enemy found
+      if (closestEnemy) {
+        closestEnemy.takeDamage(attackDamage);
+        this.attackCooldownRemaining = attackCooldown;
+        
+        // Create attack visual
+        this.createAttackVisual(closestEnemy, gameState.scene);
+      }
+    },
+    
+    // Create attack visual
+    createAttackVisual(target, scene) {
+      if (!scene) return;
+      
+      // Create line geometry
+      const points = [
+        new THREE.Vector3(this.position.x, this.position.y, this.zIndex + 0.1),
+        new THREE.Vector3(target.position.x, target.position.y, target.zIndex + 0.1)
+      ];
+      
+      const geometry = new THREE.BufferGeometry().setFromPoints(points);
+      const material = new THREE.LineBasicMaterial({
+        color: 0xff0000,
+        transparent: true,
+        opacity: 0.8
+      });
+      
+      const line = new THREE.Line(geometry, material);
+      scene.add(line);
+      
+      // Fade out and remove
+      const fadeOut = () => {
+        material.opacity -= 0.05;
+        
+        if (material.opacity <= 0) {
+          scene.remove(line);
+        } else {
+          requestAnimationFrame(fadeOut);
+        }
+      };
+      
+      fadeOut();
+    },
+    
+    // Produce a unit
     produceUnit(gameState) {
       if (!this.productionType || !gameState) return;
       
@@ -353,9 +569,13 @@ const createBuilding = (config) => {
       };
       
       // Create and add unit
-      gameState.createUnit(unitOptions);
+      if (typeof gameState.createUnit === 'function') {
+        gameState.createUnit(unitOptions);
+      }
     }
   };
-};
+  
+  return building;
+}
 
-export { BuildingInterface, createBuilding, BUILDING_TYPES }; 
+export default { BuildingInterface, createBuilding, BUILDING_TYPES };

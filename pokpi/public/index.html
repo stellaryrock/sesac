@@ -1,245 +1,256 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2D RTS Game</title>
-    <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            font-family: Arial, sans-serif;
-            background-color: #222;
-            color: #fff;
-        }
-        
-        #game-container {
-            position: relative;
-            width: 100%;
-            height: 100%;
-        }
-        
-        #ui {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            padding: 10px;
-            display: flex;
-            justify-content: space-between;
-        }
-        
-        #resources {
-            display: flex;
-            gap: 20px;
-        }
-        
-        #actions {
-            display: flex;
-            gap: 10px;
-        }
-        
-        button {
-            padding: 5px 10px;
-            background-color: #4CAF50;
-            border: none;
-            color: white;
-            cursor: pointer;
-        }
-        
-        button:hover {
-            background-color: #45a049;
-        }
-        
-        #loading {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            transition: opacity 0.5s;
-        }
-        
-        #loading h1 {
-            color: #fff;
-            margin-bottom: 20px;
-        }
-        
-        .progress-bar {
-            width: 300px;
-            height: 20px;
-            background: #333;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        
-        .progress {
-            width: 0%;
-            height: 100%;
-            background: #4CAF50;
-            transition: width 0.3s;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2D RTS Game</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/ui.css">
+  <!-- Import Three.js with a proper module specifier -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.module.js"
+      }
+    }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div id="game-container"></div>
+  <div id="game-container"></div>
+  
+  <!-- Just keep the debug overlay for camera controls -->
+  <div id="debug-overlay" style="position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); padding: 10px; border-radius: 5px; font-size: 12px;">
+    <p>Camera Controls:</p>
+    <ul>
+      <li>Left-click + drag: Move camera</li>
+      <li>Mouse wheel: Zoom in/out</li>
+      <li>WASD/Arrow keys: Move camera</li>
+      <li>R: Reset camera</li>
+    </ul>
+  </div>
+  
+  <!-- Load game scripts -->
+  <script type="module">
+    import * as THREE from 'three';
+    import { GameEngine } from './js/engine/core.js';
+    import { cameraSystem } from './js/rts/systems/cameraSystem.js';
+    import { backgroundSystem } from './js/rts/systems/backgroundSystem.js';
     
-    <div id="ui">
-        <div id="resources">
-            <div id="gold">Gold: 500</div>
-            <div id="wood">Wood: 300</div>
-            <div id="stone">Stone: 200</div>
-        </div>
-        <div id="actions">
-            <button id="build-barracks">Build Barracks</button>
-            <button id="train-worker">Train Worker</button>
-        </div>
-    </div>
+    // Make THREE globally available for other modules
+    window.THREE = THREE;
     
-    <div id="loading">
-        <h1>Loading Game...</h1>
-        <div class="progress-bar">
-            <div class="progress" id="progress-bar"></div>
-        </div>
-    </div>
+    // Game instance
+    let game;
+    let selectedEntities = [];
     
-    <!-- Import Three.js -->
-    <script type="importmap">
-        {
-            "imports": {
-                "three": "https://unpkg.com/three@0.152.2/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.152.2/examples/jsm/"
-            }
+    // Make these globally available
+    window.selectedEntities = selectedEntities;
+    window.updateSelectionUI = function() {
+      const buildingSystem = game.getSystem('building');
+      if (buildingSystem && buildingSystem.updateSelectionUI) {
+        buildingSystem.updateSelectionUI();
+      }
+    };
+    
+    // Player resources
+    window.playerResources = {
+      gold: 500,
+      wood: 300,
+      stone: 200,
+      food: 100,
+      energy: 0
+    };
+    
+    // Initialize the game when page loads
+    window.addEventListener('DOMContentLoaded', () => {
+      // Make sure UI elements exist
+      const uiContainer = document.getElementById('ui-container');
+      if (!uiContainer) {
+        console.error('UI container not found. Creating it...');
+        const container = document.createElement('div');
+        container.id = 'ui-container';
+        container.innerHTML = `
+          <div id="resources-panel">
+            <div class="resource">
+              <div id="gold-icon" class="resource-icon"></div>
+              <span id="gold">Credits: 500</span>
+            </div>
+            <div class="resource">
+              <div id="wood-icon" class="resource-icon"></div>
+              <span id="wood">Minerals: 300</span>
+            </div>
+            <div class="resource">
+              <div id="stone-icon" class="resource-icon"></div>
+              <span id="stone">Alloys: 200</span>
+            </div>
+            <div class="resource">
+              <div id="food-icon" class="resource-icon"></div>
+              <span id="food">Food: 100</span>
+            </div>
+            <div class="resource">
+              <div id="energy-icon" class="resource-icon"></div>
+              <span id="energy">Energy: 0</span>
+            </div>
+            <div class="resource">
+              <div id="oxygen-icon" class="resource-icon"></div>
+              <span id="oxygen">Oxygen: 200</span>
+            </div>
+          </div>
+          
+          <div id="action-panel">
+            <div id="selection-info">
+              <h3>No selection</h3>
+              <div id="selection-details"></div>
+            </div>
+            
+            <div id="actions">
+              <!-- Action buttons will be added here dynamically -->
+            </div>
+          </div>
+        `;
+        document.body.appendChild(container);
+      }
+      
+      // Initialize game
+      initGame();
+    });
+    
+    function initGame() {
+      // Create game engine with darker background
+      game = new GameEngine({
+        parentElement: document.getElementById('game-container'),
+        backgroundColor: 0x010103 // Extremely dark blue-black
+      });
+      
+      // Make game globally available
+      window.game = game;
+      
+      // Add only essential systems
+      game.addSystem(backgroundSystem); // Keep the space background
+      game.addSystem(cameraSystem);     // Keep camera controls
+      
+      // Remove grid - no need for a tilemap in space
+      // createGrid(game.scene, 2000, 2000, 32, 0x222233);
+      
+      // Start game loop
+      game.start();
+    }
+    
+    function createGrid(scene, width, height, step, color) {
+      const material = new THREE.LineBasicMaterial({ 
+        color: color,
+        transparent: true,
+        opacity: 0.3
+      });
+      
+      const halfWidth = width / 2;
+      const halfHeight = height / 2;
+      
+      // Create vertical lines
+      for (let x = -halfWidth; x <= halfWidth; x += step) {
+        const points = [
+          new THREE.Vector3(x, -halfHeight, 0),
+          new THREE.Vector3(x, halfHeight, 0)
+        ];
+        
+        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        const line = new THREE.Line(geometry, material);
+        scene.add(line);
+      }
+      
+      // Create horizontal lines
+      for (let y = -halfHeight; y <= halfHeight; y += step) {
+        const points = [
+          new THREE.Vector3(-halfWidth, y, 0),
+          new THREE.Vector3(halfWidth, y, 0)
+        ];
+        
+        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        const line = new THREE.Line(geometry, material);
+        scene.add(line);
+      }
+    }
+    
+    function createInitialEntities() {
+      // Create a solar power plant
+      const solarPlant = createSolarPowerPlant({
+        player: 0,
+        x: -200,
+        y: 0,
+        isBuilt: true
+      });
+      
+      game.addEntity(solarPlant);
+      
+      // Create another solar power plant for enemy
+      const enemySolarPlant = createSolarPowerPlant({
+        player: 1,
+        x: 200,
+        y: 200,
+        isBuilt: true
+      });
+      
+      game.addEntity(enemySolarPlant);
+    }
+    
+    // Resource collection callback
+    window.onResourceGenerated = function(type, amount) {
+      if (!window.playerResources[type]) {
+        window.playerResources[type] = 0;
+      }
+      
+      window.playerResources[type] += amount;
+      
+      const resourceElement = document.getElementById(type);
+      if (resourceElement) {
+        resourceElement.textContent = `${type.charAt(0).toUpperCase() + type.slice(1)}: ${Math.floor(window.playerResources[type])}`;
+      }
+    };
+  </script>
+  
+  <script>
+    function createStarField() {
+      const gameContainer = document.getElementById('game-container');
+      const starCount = 300; // More stars
+      
+      for (let i = 0; i < starCount; i++) {
+        const star = document.createElement('div');
+        const size = Math.random();
+        let sizeClass;
+        
+        // More varied star sizes
+        if (size < 0.7) {
+          sizeClass = 'small';
+        } else if (size < 0.9) {
+          sizeClass = 'medium';
+        } else {
+          sizeClass = 'large';
         }
-    </script>
-    
-    <!-- Import game modules -->
-    <script type="module">
-        import * as THREE from 'three';
-        import RTSGame from './js/rts/rtsGame.js';
         
-        // Make THREE globally available for other modules
-        window.THREE = THREE;
+        star.className = `star star-${sizeClass}`;
         
-        // Initialize loading progress
-        const progressBar = document.getElementById('progress-bar');
-        const loadingScreen = document.getElementById('loading');
+        // Random position
+        star.style.left = `${Math.random() * 100}%`;
+        star.style.top = `${Math.random() * 100}%`;
         
-        // UI elements
-        const goldDisplay = document.getElementById('gold');
-        const woodDisplay = document.getElementById('wood');
-        const stoneDisplay = document.getElementById('stone');
-        const buildBarracksButton = document.getElementById('build-barracks');
-        const trainWorkerButton = document.getElementById('train-worker');
+        // Random animation delay and duration
+        const duration = 2 + Math.random() * 4;
+        star.style.animationDelay = `${Math.random() * 5}s`;
+        star.style.animationDuration = `${duration}s`;
         
-        // Set up loading progress
-        function updateLoadingProgress(progress) {
-            progressBar.style.width = `${progress * 100}%`;
-            
-            if (progress >= 1) {
-                setTimeout(() => {
-                    loadingScreen.style.opacity = '0';
-                    setTimeout(() => {
-                        loadingScreen.style.display = 'none';
-                    }, 500);
-                }, 500);
-            }
+        // Random color tint for some stars
+        if (Math.random() > 0.7) {
+          const hue = Math.floor(Math.random() * 60) + 180; // Blue to purple range
+          star.style.backgroundColor = `hsl(${hue}, 100%, 90%)`;
         }
         
-        // Initialize game when page loads
-        window.addEventListener('load', () => {
-            // Start loading
-            updateLoadingProgress(0.2);
-            
-            // Initialize game
-            const gameContainer = document.getElementById('game-container');
-            const game = new RTSGame(gameContainer);
-            
-            // Update resource displays
-            window.onResourceCollected = function(type, amount) {
-                game.playerResources[type] += amount;
-                updateResourceDisplay();
-            };
-            
-            function updateResourceDisplay() {
-                goldDisplay.textContent = `Gold: ${game.playerResources.gold}`;
-                woodDisplay.textContent = `Wood: ${game.playerResources.wood}`;
-                stoneDisplay.textContent = `Stone: ${game.playerResources.stone}`;
-            }
-            
-            // Set up button actions
-            buildBarracksButton.addEventListener('click', () => {
-                // Check if we have enough resources
-                if (game.playerResources.wood >= 150 && game.playerResources.stone >= 100) {
-                    // Find a selected worker
-                    const worker = game.selectedEntities.find(entity => 
-                        entity instanceof Unit && entity.type === 'worker'
-                    );
-                    
-                    if (worker) {
-                        // Deduct resources
-                        game.playerResources.wood -= 150;
-                        game.playerResources.stone -= 100;
-                        updateResourceDisplay();
-                        
-                        // Create building blueprint
-                        const barracksOptions = {
-                            type: 'barracks',
-                            player: 0,
-                            x: worker.position.x + 100,
-                            y: worker.position.y,
-                            isBuilt: false
-                        };
-                        
-                        const barracks = new Building(barracksOptions);
-                        game.addBuilding(barracks);
-                        
-                        // Command worker to build
-                        worker.build(barracks);
-                    } else {
-                        alert('Select a worker first!');
-                    }
-                } else {
-                    alert('Not enough resources! Barracks costs 150 wood and 100 stone.');
-                }
-            });
-            
-            trainWorkerButton.addEventListener('click', () => {
-                // Find a selected base
-                const base = game.selectedEntities.find(entity => 
-                    entity instanceof Building && entity.type === 'base'
-                );
-                
-                if (base) {
-                    // Check if we have enough resources
-                    if (game.playerResources.gold >= 50) {
-                        // Deduct resources
-                        game.playerResources.gold -= 50;
-                        updateResourceDisplay();
-                        
-                        // Add worker to production queue
-                        base.addToQueue('worker');
-                    } else {
-                        alert('Not enough resources! Worker costs 50 gold.');
-                    }
-                } else {
-                    alert('Select a base first!');
-                }
-            });
-            
-            // Finish loading
-            updateLoadingProgress(1);
-        });
-    </script>
+        gameContainer.appendChild(star);
+      }
+    }
+    
+    // Create stars after DOM is loaded
+    document.addEventListener('DOMContentLoaded', createStarField);
+  </script>
 </body>
 </html> 

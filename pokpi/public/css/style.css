@@ -1,29 +1,30 @@
+/* Space-themed styling */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-body {
-    background-color: #111;
-    color: #fff;
-    font-family: Arial, sans-serif;
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
     overflow: hidden;
+    font-family: 'Orbitron', sans-serif;
+    background-color: #050510; /* Very dark blue-black */
+    color: #a0a7cc;
 }
 
 #game-container {
-    position: absolute;
-    top: 0;
-    left: 0;
+    position: relative;
     width: 100%;
     height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    background-color: #010103; /* Extremely dark blue-black */
 }
 
 #game-canvas {
-    background-color: #000;
+    background-color: #010103;
     max-width: 100%;
     max-height: 100%;
 }
@@ -35,4 +36,59 @@ body {
     transform: translate(-50%, -50%);
     font-size: 24px;
     color: #fff;
+}
+
+#debug-overlay {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(0,0,0,0.7) !important;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    border: 1px solid #4a6fa5;
+    color: #4ECDC4;
+    font-family: 'Orbitron', sans-serif;
+}
+
+#debug-overlay p {
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+#debug-overlay ul {
+    list-style-type: none;
+    padding-left: 10px;
+}
+
+#debug-overlay li {
+    margin: 3px 0;
+    font-size: 11px;
+}
+
+/* Star field animation */
+@keyframes twinkle {
+    0% { opacity: 0.2; }
+    50% { opacity: 0.8; }
+    100% { opacity: 0.2; }
+}
+
+.star {
+    display: none;
+}
+
+.star-small {
+    width: 1px;
+    height: 1px;
+}
+
+.star-medium {
+    width: 2px;
+    height: 2px;
+}
+
+.star-large {
+    width: 3px;
+    height: 3px;
+    box-shadow: 0 0 4px #6a8fc5;
 } 
