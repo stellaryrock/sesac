@@ -28,7 +28,7 @@ export const backgroundSystem = {
   
   // Create starfield with thousands of stars
   createStarfield(engine) {
-    const starCount = 3000; // More stars for a richer background
+    const starCount = 3003; // More stars for a richer background
     const starGeometry = new THREE.BufferGeometry();
     const starPositions = [];
     const starColors = [];

@@ -1,6 +1,6 @@
 /**
  * Camera System
- * Handles camera movement, zooming, and controls
+ * Handles camera movement, rotation, and controls
  */
 import * as THREE from 'three';
 
@@ -11,405 +11,216 @@ export const cameraSystem = {
   // System state
   isDragging: false,
   lastMousePosition: { x: 0, y: 0 },
-  zoomLevel: 1,
-  minZoom: 0.5,
-  maxZoom: 2.5,
-  panSpeed: 1.2,
-  zoomSpeed: 0.1,
-  edgeScrollThreshold: 20,
-  edgeScrollSpeed: 0.8,
-  boundarySize: 1000, // Maximum distance from center
+  targetPosition: new THREE.Vector3(0, 0, 0),
+  targetRotation: new THREE.Euler(0, 0, 0),
+  cameraDistance: 1000,
+  minDistance: 200,
+  maxDistance: 2000,
+  rotationSpeed: 0.005,
+  moveSpeed: 5,
+  zoomSpeed: 50,
   
   // Initialize the system
   init(engine) {
-    console.log('Initializing camera system');
-    
-    // Set initial camera position
-    engine.camera.position.set(0, 0, 1000);
-    engine.camera.lookAt(0, 0, 0);
-    
-    // Store original camera settings
-    this.originalZ = engine.camera.position.z;
-    this.originalLeft = engine.camera.left;
-    this.originalRight = engine.camera.right;
-    this.originalTop = engine.camera.top;
-    this.originalBottom = engine.camera.bottom;
+    // Set up camera
+    this.setupCamera(engine);
     
     // Add event listeners
+    this.setupEventListeners(engine);
+    
+    // Add debug info
+    this.setupDebugInfo();
+  },
+  
+  // Set up the camera
+  setupCamera(engine) {
+    // Create perspective camera
+    const camera = new THREE.PerspectiveCamera(
+      60, // Field of view
+      window.innerWidth / window.innerHeight, // Aspect ratio
+      1, // Near clipping plane
+      10000 // Far clipping plane
+    );
+    
+    // Set initial position
+    camera.position.set(0, 0, this.cameraDistance);
+    
+    // Look at center
+    camera.lookAt(0, 0, 0);
+    
+    // Store camera in engine
+    engine.camera = camera;
+    
+    // Create camera pivot for orbital movement
+    this.cameraPivot = new THREE.Object3D();
+    this.cameraPivot.add(camera);
+    engine.scene.add(this.cameraPivot);
+    
+    // Handle window resize
+    window.addEventListener('resize', () => {
+      engine.camera.aspect = window.innerWidth / window.innerHeight;
+      engine.camera.updateProjectionMatrix();
+      engine.renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  },
+  
+  // Set up event listeners for camera controls
+  setupEventListeners(engine) {
     const container = engine.config.parentElement;
     
-    // Mouse wheel for zooming
+    // Mouse controls
+    container.addEventListener('mousedown', (event) => {
+      if (event.button === 0) { // Left mouse button
+        this.isDragging = true;
+        this.lastMousePosition.x = event.clientX;
+        this.lastMousePosition.y = event.clientY;
+      }
+    });
+    
+    container.addEventListener('mousemove', (event) => {
+      if (this.isDragging) {
+        const deltaX = event.clientX - this.lastMousePosition.x;
+        const deltaY = event.clientY - this.lastMousePosition.y;
+        
+        // Rotate camera based on mouse movement
+        this.targetRotation.y -= deltaX * this.rotationSpeed;
+        this.targetRotation.x -= deltaY * this.rotationSpeed;
+        
+        // Limit vertical rotation to prevent flipping
+        this.targetRotation.x = Math.max(-Math.PI/2 + 0.1, Math.min(Math.PI/2 - 0.1, this.targetRotation.x));
+        
+        this.lastMousePosition.x = event.clientX;
+        this.lastMousePosition.y = event.clientY;
+      }
+    });
+    
+    window.addEventListener('mouseup', () => {
+      this.isDragging = false;
+    });
+    
+    // Zoom with mouse wheel
     container.addEventListener('wheel', (event) => {
       event.preventDefault();
-      this.handleZoom(event, engine);
-    });
-    
-    // Middle mouse button or right mouse button for panning
-    container.addEventListener('mousedown', (event) => {
-      // Use left mouse button (0) when not placing buildings
-      if (event.button === 0 && (!engine.buildingSystem || !engine.buildingSystem.isPlacingBuilding)) {
-        event.preventDefault();
-        this.startDrag(event);
-      }
-      // Always allow middle (1) or right (2) mouse button for panning
-      else if (event.button === 1 || event.button === 2) {
-        event.preventDefault();
-        this.startDrag(event);
-      }
-    });
-    
-    // Make sure we track mouse movement for dragging
-    window.addEventListener('mousemove', (event) => {
-      this.handleMouseMove(event, engine);
-    });
-    
-    // And handle mouse up to end dragging
-    window.addEventListener('mouseup', (event) => {
-      if (event.button === 0 || event.button === 1 || event.button === 2) {
-        this.endDrag();
-      }
-    });
-    
-    container.addEventListener('mouseleave', () => {
-      this.endDrag();
+      
+      // Adjust camera distance based on wheel direction
+      this.cameraDistance += event.deltaY * this.zoomSpeed / 100;
+      
+      // Clamp distance
+      this.cameraDistance = Math.max(this.minDistance, Math.min(this.maxDistance, this.cameraDistance));
     });
     
     // Keyboard controls
-    document.addEventListener('keydown', (event) => {
-      this.handleKeyDown(event, engine);
-    });
+    const keyState = {};
     
-    // Prevent context menu on right-click
-    container.addEventListener('contextmenu', (event) => {
-      if (!engine.buildingSystem || !engine.buildingSystem.isPlacingBuilding) {
-        event.preventDefault();
-      }
-    });
-    
-    // Add touch support for mobile
-    container.addEventListener('touchstart', (event) => {
-      if (event.touches.length === 2) {
-        // Two finger touch for zooming
-        this.handleTouchStart(event);
-      } else if (event.touches.length === 1) {
-        // Single finger touch for panning
-        this.startDrag({
-          clientX: event.touches[0].clientX,
-          clientY: event.touches[0].clientY
-        });
-      }
-    });
-    
-    container.addEventListener('touchmove', (event) => {
-      if (event.touches.length === 2) {
-        // Two finger touch for zooming
-        this.handleTouchMove(event, engine);
-      } else if (event.touches.length === 1 && this.isDragging) {
-        // Single finger touch for panning
-        this.handleDrag({
-          clientX: event.touches[0].clientX,
-          clientY: event.touches[0].clientY
-        }, engine);
-      }
+    window.addEventListener('keydown', (event) => {
+      keyState[event.key.toLowerCase()] = true;
       
-      // Prevent page scrolling
-      event.preventDefault();
+      // Reset camera with 'r' key
+      if (event.key.toLowerCase() === 'r') {
+        this.resetCamera();
+      }
     });
     
-    container.addEventListener('touchend', () => {
-      this.endDrag();
-      this.lastTouchDistance = null;
+    window.addEventListener('keyup', (event) => {
+      keyState[event.key.toLowerCase()] = false;
     });
+    
+    // Store key state for update loop
+    this.keyState = keyState;
   },
   
-  // Start camera drag
-  startDrag(event) {
-    this.isDragging = true;
-    this.lastMousePosition = {
-      x: event.clientX,
-      y: event.clientY
-    };
+  // Set up debug info display
+  setupDebugInfo() {
+    const debugOverlay = document.getElementById('debug-overlay');
+    if (!debugOverlay) return;
+    
+    // Create camera info element
+    const cameraInfo = document.createElement('div');
+    cameraInfo.id = 'camera-info';
+    debugOverlay.appendChild(cameraInfo);
+    
+    // Store reference
+    this.cameraInfo = cameraInfo;
   },
   
-  // Handle camera drag
-  handleDrag(event, engine) {
-    if (!this.isDragging) return;
-    
-    // Calculate mouse movement
-    const deltaX = event.clientX - this.lastMousePosition.x;
-    const deltaY = event.clientY - this.lastMousePosition.y;
-    
-    // Update last position
-    this.lastMousePosition = {
-      x: event.clientX,
-      y: event.clientY
-    };
-    
-    // Move camera in opposite direction of mouse movement
-    this.moveCamera(-deltaX * this.panSpeed, deltaY * this.panSpeed, engine);
+  // Reset camera to default position
+  resetCamera() {
+    this.targetPosition.set(0, 0, 0);
+    this.targetRotation.set(0, 0, 0);
+    this.cameraDistance = 1000;
   },
   
-  // End camera drag
-  endDrag() {
-    this.isDragging = false;
+  // Update camera position based on keyboard input
+  updateCameraPosition(deltaTime) {
+    const moveAmount = this.moveSpeed * deltaTime;
+    
+    // Get forward and right vectors from camera
+    const forward = new THREE.Vector3(0, 0, -1).applyEuler(this.cameraPivot.rotation);
+    const right = new THREE.Vector3(1, 0, 0).applyEuler(this.cameraPivot.rotation);
+    
+    // Forward/backward movement (W/S or Arrow Up/Down)
+    if (this.keyState['w'] || this.keyState['arrowup']) {
+      this.targetPosition.add(forward.clone().multiplyScalar(moveAmount * 10));
+    }
+    if (this.keyState['s'] || this.keyState['arrowdown']) {
+      this.targetPosition.add(forward.clone().multiplyScalar(-moveAmount * 10));
+    }
+    
+    // Left/right movement (A/D or Arrow Left/Right)
+    if (this.keyState['a'] || this.keyState['arrowleft']) {
+      this.targetPosition.add(right.clone().multiplyScalar(-moveAmount * 10));
+    }
+    if (this.keyState['d'] || this.keyState['arrowright']) {
+      this.targetPosition.add(right.clone().multiplyScalar(moveAmount * 10));
+    }
+    
+    // Up/down movement (Q/E)
+    if (this.keyState['q']) {
+      this.targetPosition.y += moveAmount * 10;
+    }
+    if (this.keyState['e']) {
+      this.targetPosition.y -= moveAmount * 10;
+    }
   },
   
-  // Handle mouse wheel zoom
-  handleZoom(event, engine) {
-    // Determine zoom direction (normalize across browsers)
-    const zoomDirection = Math.sign(event.deltaY);
-    const zoomAmount = zoomDirection * this.zoomSpeed;
+  // Update debug info
+  updateDebugInfo(engine) {
+    if (!this.cameraInfo) return;
     
-    // Calculate new zoom level
-    const newZoomLevel = Math.max(
-      this.minZoom,
-      Math.min(this.maxZoom, this.zoomLevel + zoomAmount)
-    );
-    
-    // If zoom level didn't change, exit early
-    if (newZoomLevel === this.zoomLevel) return;
-    
-    // Get mouse position in world coordinates before zoom
-    const mouseX = event.clientX;
-    const mouseY = event.clientY;
-    const rect = engine.renderer.domElement.getBoundingClientRect();
-    
-    // Convert to normalized device coordinates
-    const ndcX = ((mouseX - rect.left) / rect.width) * 2 - 1;
-    const ndcY = -((mouseY - rect.top) / rect.height) * 2 + 1;
-    
-    // Convert to world coordinates
-    const mouse3D = new THREE.Vector3(ndcX, ndcY, 0);
-    mouse3D.unproject(engine.camera);
-    
-    // Store world point under mouse
-    const worldPoint = {
-      x: mouse3D.x,
-      y: mouse3D.y
-    };
-    
-    // Apply zoom
-    const zoomFactor = newZoomLevel / this.zoomLevel;
-    this.zoomLevel = newZoomLevel;
-    
-    // For orthographic camera, adjust the camera's projection matrix
     const camera = engine.camera;
-    const originalWidth = (camera.right - camera.left);
-    const originalHeight = (camera.top - camera.bottom);
+    const position = camera.position;
+    const rotation = this.cameraPivot.rotation;
     
-    const newWidth = originalWidth / zoomFactor;
-    const newHeight = originalHeight / zoomFactor;
-    
-    camera.left = -newWidth / 2;
-    camera.right = newWidth / 2;
-    camera.top = newHeight / 2;
-    camera.bottom = -newHeight / 2;
-    camera.updateProjectionMatrix();
-    
-    // After zooming, the world point under the mouse should remain the same
-    // Get new world point under mouse after zoom
-    const newMouse3D = new THREE.Vector3(ndcX, ndcY, 0);
-    newMouse3D.unproject(engine.camera);
-    
-    // Calculate the difference
-    const deltaX = worldPoint.x - newMouse3D.x;
-    const deltaY = worldPoint.y - newMouse3D.y;
-    
-    // Adjust camera position to keep mouse over the same world point
-    camera.position.x += deltaX;
-    camera.position.y += deltaY;
-    
-    // Enforce boundaries
-    this.enforceBoundaries(engine);
-    
-    // Log zoom level for debugging
-    console.log('Zoom level:', this.zoomLevel, 'Camera zoom:', camera.zoom);
-  },
-  
-  // Handle touch zoom
-  handleTouchStart(event) {
-    if (event.touches.length !== 2) return;
-    
-    // Calculate initial distance between touch points
-    const dx = event.touches[0].clientX - event.touches[1].clientX;
-    const dy = event.touches[0].clientY - event.touches[1].clientY;
-    this.lastTouchDistance = Math.sqrt(dx * dx + dy * dy);
-  },
-  
-  // Handle touch move for zooming
-  handleTouchMove(event, engine) {
-    if (event.touches.length !== 2 || !this.lastTouchDistance) return;
-    
-    // Calculate new distance between touch points
-    const dx = event.touches[0].clientX - event.touches[1].clientX;
-    const dy = event.touches[0].clientY - event.touches[1].clientY;
-    const newDistance = Math.sqrt(dx * dx + dy * dy);
-    
-    // Calculate zoom amount based on pinch gesture
-    const zoomDelta = (this.lastTouchDistance - newDistance) * 0.01;
-    
-    // Create a synthetic wheel event at the center of the pinch
-    const centerX = (event.touches[0].clientX + event.touches[1].clientX) / 2;
-    const centerY = (event.touches[0].clientY + event.touches[1].clientY) / 2;
-    
-    this.handleZoom({
-      deltaY: zoomDelta * 100,
-      clientX: centerX,
-      clientY: centerY
-    }, engine);
-    
-    // Update last distance
-    this.lastTouchDistance = newDistance;
-  },
-  
-  // Handle mouse movement for edge scrolling and dragging
-  handleMouseMove(event, engine) {
-    // Handle dragging
-    if (this.isDragging) {
-      this.handleDrag(event, engine);
-      return;
-    }
-    
-    // Handle edge scrolling
-    const rect = engine.renderer.domElement.getBoundingClientRect();
-    
-    // Check if mouse is inside the game container
-    if (event.clientX < rect.left || event.clientX > rect.right ||
-        event.clientY < rect.top || event.clientY > rect.bottom) {
-      return;
-    }
-    
-    // Calculate distance from edges
-    const distFromLeft = event.clientX - rect.left;
-    const distFromRight = rect.right - event.clientX;
-    const distFromTop = event.clientY - rect.top;
-    const distFromBottom = rect.bottom - event.clientY;
-    
-    // Calculate movement based on edge proximity
-    let moveX = 0;
-    let moveY = 0;
-    
-    if (distFromLeft < this.edgeScrollThreshold) {
-      moveX = -this.edgeScrollSpeed * (1 - distFromLeft / this.edgeScrollThreshold);
-    } else if (distFromRight < this.edgeScrollThreshold) {
-      moveX = this.edgeScrollSpeed * (1 - distFromRight / this.edgeScrollThreshold);
-    }
-    
-    if (distFromTop < this.edgeScrollThreshold) {
-      moveY = -this.edgeScrollSpeed * (1 - distFromTop / this.edgeScrollThreshold);
-    } else if (distFromBottom < this.edgeScrollThreshold) {
-      moveY = this.edgeScrollSpeed * (1 - distFromBottom / this.edgeScrollThreshold);
-    }
-    
-    // Apply movement if needed
-    if (moveX !== 0 || moveY !== 0) {
-      this.moveCamera(moveX, moveY, engine);
-    }
-  },
-  
-  // Handle keyboard controls
-  handleKeyDown(event, engine) {
-    let moveX = 0;
-    let moveY = 0;
-    
-    // Arrow keys or WASD
-    switch (event.key) {
-      case 'ArrowUp':
-      case 'w':
-      case 'W':
-        moveY = -this.panSpeed * 5;
-        break;
-      case 'ArrowDown':
-      case 's':
-      case 'S':
-        moveY = this.panSpeed * 5;
-        break;
-      case 'ArrowLeft':
-      case 'a':
-      case 'A':
-        moveX = -this.panSpeed * 5;
-        break;
-      case 'ArrowRight':
-      case 'd':
-      case 'D':
-        moveX = this.panSpeed * 5;
-        break;
-      // Zoom controls
-      case '+':
-      case '=':
-        this.handleZoom({ deltaY: -100, clientX: window.innerWidth/2, clientY: window.innerHeight/2 }, engine);
-        break;
-      case '-':
-      case '_':
-        this.handleZoom({ deltaY: 100, clientX: window.innerWidth/2, clientY: window.innerHeight/2 }, engine);
-        break;
-      // Reset view
-      case 'Home':
-      case 'r':
-      case 'R':
-        this.resetCamera(engine);
-        break;
-    }
-    
-    if (moveX !== 0 || moveY !== 0) {
-      this.moveCamera(moveX, moveY, engine);
-    }
-  },
-  
-  // Move camera by given amounts
-  moveCamera(deltaX, deltaY, engine) {
-    // Scale movement by zoom level
-    const scaledDeltaX = deltaX / this.zoomLevel;
-    const scaledDeltaY = deltaY / this.zoomLevel;
-    
-    // Update camera position
-    engine.camera.position.x += scaledDeltaX;
-    engine.camera.position.y += scaledDeltaY;
-    
-    // Enforce boundaries
-    this.enforceBoundaries(engine);
-  },
-  
-  // Reset camera to initial position
-  resetCamera(engine) {
-    console.log('Resetting camera');
-    
-    engine.camera.position.x = 0;
-    engine.camera.position.y = 0;
-    this.zoomLevel = 1;
-    
-    // Reset orthographic camera parameters
-    engine.camera.left = this.originalLeft;
-    engine.camera.right = this.originalRight;
-    engine.camera.top = this.originalTop;
-    engine.camera.bottom = this.originalBottom;
-    engine.camera.updateProjectionMatrix();
-  },
-  
-  // Enforce camera boundaries
-  enforceBoundaries(engine) {
-    // Calculate effective boundary based on zoom
-    const effectiveBoundary = this.boundarySize * 0.8;
-    
-    // Clamp X position
-    engine.camera.position.x = Math.max(
-      -effectiveBoundary,
-      Math.min(effectiveBoundary, engine.camera.position.x)
-    );
-    
-    // Clamp Y position
-    engine.camera.position.y = Math.max(
-      -effectiveBoundary,
-      Math.min(effectiveBoundary, engine.camera.position.y)
-    );
+    this.cameraInfo.innerHTML = `
+      <p>Camera:</p>
+      <ul>
+        <li>Position: X: ${position.x.toFixed(0)}, Y: ${position.y.toFixed(0)}, Z: ${position.z.toFixed(0)}</li>
+        <li>Rotation: X: ${(rotation.x * 180 / Math.PI).toFixed(1)}°, Y: ${(rotation.y * 180 / Math.PI).toFixed(1)}°</li>
+        <li>Distance: ${this.cameraDistance.toFixed(0)}</li>
+      </ul>
+    `;
   },
   
   // Update system
   update(deltaTime, engine) {
-    // Add debug info
-    if (engine.frameCount % 60 === 0) {
-      console.log('Camera position:', engine.camera.position, 'Zoom level:', this.zoomLevel);
-    }
+    // Update camera position based on keyboard input
+    this.updateCameraPosition(deltaTime);
+    
+    // Smoothly interpolate camera pivot rotation
+    this.cameraPivot.rotation.x += (this.targetRotation.x - this.cameraPivot.rotation.x) * 0.1;
+    this.cameraPivot.rotation.y += (this.targetRotation.y - this.cameraPivot.rotation.y) * 0.1;
+    
+    // Smoothly interpolate camera pivot position
+    this.cameraPivot.position.x += (this.targetPosition.x - this.cameraPivot.position.x) * 0.1;
+    this.cameraPivot.position.y += (this.targetPosition.y - this.cameraPivot.position.y) * 0.1;
+    this.cameraPivot.position.z += (this.targetPosition.z - this.cameraPivot.position.z) * 0.1;
+    
+    // Update camera distance (zoom)
+    const camera = engine.camera;
+    camera.position.z += (this.cameraDistance - camera.position.z) * 0.1;
+    
+    // Update debug info
+    this.updateDebugInfo(engine);
   },
   
   // Add minimap controls

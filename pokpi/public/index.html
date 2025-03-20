@@ -19,13 +19,14 @@
 <body>
   <div id="game-container"></div>
   
-  <!-- Just keep the debug overlay for camera controls -->
+  <!-- Update the debug overlay with more detailed camera controls -->
   <div id="debug-overlay" style="position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); padding: 10px; border-radius: 5px; font-size: 12px;">
     <p>Camera Controls:</p>
     <ul>
-      <li>Left-click + drag: Move camera</li>
+      <li>Left-click + drag: Rotate camera</li>
       <li>Mouse wheel: Zoom in/out</li>
-      <li>WASD/Arrow keys: Move camera</li>
+      <li>WASD/Arrow keys: Move camera position</li>
+      <li>Q/E: Move camera up/down</li>
       <li>R: Reset camera</li>
     </ul>
   </div>
@@ -53,66 +54,8 @@
       }
     };
     
-    // Player resources
-    window.playerResources = {
-      gold: 500,
-      wood: 300,
-      stone: 200,
-      food: 100,
-      energy: 0
-    };
     
-    // Initialize the game when page loads
     window.addEventListener('DOMContentLoaded', () => {
-      // Make sure UI elements exist
-      const uiContainer = document.getElementById('ui-container');
-      if (!uiContainer) {
-        console.error('UI container not found. Creating it...');
-        const container = document.createElement('div');
-        container.id = 'ui-container';
-        container.innerHTML = `
-          <div id="resources-panel">
-            <div class="resource">
-              <div id="gold-icon" class="resource-icon"></div>
-              <span id="gold">Credits: 500</span>
-            </div>
-            <div class="resource">
-              <div id="wood-icon" class="resource-icon"></div>
-              <span id="wood">Minerals: 300</span>
-            </div>
-            <div class="resource">
-              <div id="stone-icon" class="resource-icon"></div>
-              <span id="stone">Alloys: 200</span>
-            </div>
-            <div class="resource">
-              <div id="food-icon" class="resource-icon"></div>
-              <span id="food">Food: 100</span>
-            </div>
-            <div class="resource">
-              <div id="energy-icon" class="resource-icon"></div>
-              <span id="energy">Energy: 0</span>
-            </div>
-            <div class="resource">
-              <div id="oxygen-icon" class="resource-icon"></div>
-              <span id="oxygen">Oxygen: 200</span>
-            </div>
-          </div>
-          
-          <div id="action-panel">
-            <div id="selection-info">
-              <h3>No selection</h3>
-              <div id="selection-details"></div>
-            </div>
-            
-            <div id="actions">
-              <!-- Action buttons will be added here dynamically -->
-            </div>
-          </div>
-        `;
-        document.body.appendChild(container);
-      }
-      
-      // Initialize game
       initGame();
     });
     
@@ -125,132 +68,14 @@
       
       // Make game globally available
       window.game = game;
-      
-      // Add only essential systems
+
       game.addSystem(backgroundSystem); // Keep the space background
       game.addSystem(cameraSystem);     // Keep camera controls
-      
-      // Remove grid - no need for a tilemap in space
-      // createGrid(game.scene, 2000, 2000, 32, 0x222233);
-      
-      // Start game loop
+
       game.start();
     }
     
-    function createGrid(scene, width, height, step, color) {
-      const material = new THREE.LineBasicMaterial({ 
-        color: color,
-        transparent: true,
-        opacity: 0.3
-      });
-      
-      const halfWidth = width / 2;
-      const halfHeight = height / 2;
-      
-      // Create vertical lines
-      for (let x = -halfWidth; x <= halfWidth; x += step) {
-        const points = [
-          new THREE.Vector3(x, -halfHeight, 0),
-          new THREE.Vector3(x, halfHeight, 0)
-        ];
-        
-        const geometry = new THREE.BufferGeometry().setFromPoints(points);
-        const line = new THREE.Line(geometry, material);
-        scene.add(line);
-      }
-      
-      // Create horizontal lines
-      for (let y = -halfHeight; y <= halfHeight; y += step) {
-        const points = [
-          new THREE.Vector3(-halfWidth, y, 0),
-          new THREE.Vector3(halfWidth, y, 0)
-        ];
-        
-        const geometry = new THREE.BufferGeometry().setFromPoints(points);
-        const line = new THREE.Line(geometry, material);
-        scene.add(line);
-      }
-    }
-    
-    function createInitialEntities() {
-      // Create a solar power plant
-      const solarPlant = createSolarPowerPlant({
-        player: 0,
-        x: -200,
-        y: 0,
-        isBuilt: true
-      });
-      
-      game.addEntity(solarPlant);
-      
-      // Create another solar power plant for enemy
-      const enemySolarPlant = createSolarPowerPlant({
-        player: 1,
-        x: 200,
-        y: 200,
-        isBuilt: true
-      });
-      
-      game.addEntity(enemySolarPlant);
-    }
-    
-    // Resource collection callback
-    window.onResourceGenerated = function(type, amount) {
-      if (!window.playerResources[type]) {
-        window.playerResources[type] = 0;
-      }
-      
-      window.playerResources[type] += amount;
-      
-      const resourceElement = document.getElementById(type);
-      if (resourceElement) {
-        resourceElement.textContent = `${type.charAt(0).toUpperCase() + type.slice(1)}: ${Math.floor(window.playerResources[type])}`;
-      }
-    };
   </script>
   
-  <script>
-    function createStarField() {
-      const gameContainer = document.getElementById('game-container');
-      const starCount = 300; // More stars
-      
-      for (let i = 0; i < starCount; i++) {
-        const star = document.createElement('div');
-        const size = Math.random();
-        let sizeClass;
-        
-        // More varied star sizes
-        if (size < 0.7) {
-          sizeClass = 'small';
-        } else if (size < 0.9) {
-          sizeClass = 'medium';
-        } else {
-          sizeClass = 'large';
-        }
-        
-        star.className = `star star-${sizeClass}`;
-        
-        // Random position
-        star.style.left = `${Math.random() * 100}%`;
-        star.style.top = `${Math.random() * 100}%`;
-        
-        // Random animation delay and duration
-        const duration = 2 + Math.random() * 4;
-        star.style.animationDelay = `${Math.random() * 5}s`;
-        star.style.animationDuration = `${duration}s`;
-        
-        // Random color tint for some stars
-        if (Math.random() > 0.7) {
-          const hue = Math.floor(Math.random() * 60) + 180; // Blue to purple range
-          star.style.backgroundColor = `hsl(${hue}, 100%, 90%)`;
-        }
-        
-        gameContainer.appendChild(star);
-      }
-    }
-    
-    // Create stars after DOM is loaded
-    document.addEventListener('DOMContentLoaded', createStarField);
-  </script>
 </body>
 </html> 
