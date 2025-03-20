@@ -5,7 +5,14 @@
 import * as THREE from 'three';
 
 export const createStarfield = (engine) => {
+  // Number of stars to render in the starfield
   const starCount = 15000;
+  
+  // Define color range from gray to white for stars
+  const colorRange = {
+    min: new THREE.Color(0.7, 0.7, 0.7),  // Light gray
+    max: new THREE.Color(1.0, 1.0, 1.0)   // Pure white
+  };
   
   // Custom star vertex shader
   const starVertexShader = `
@@ -35,18 +42,21 @@ export const createStarfield = (engine) => {
     varying float vBrightness;
     
     void main() {
+      // Calculate distance from center of point
       float r = distance(gl_PointCoord, vec2(0.5, 0.5));
+      
+      // Discard pixels outside the star radius
       if (r > 0.5) discard;
       
-      // Create a soft glow effect
+      // Simple falloff from center to edge
       float intensity = 1.0 - r * 2.0;
-      intensity = pow(intensity, 1.5);
-      vec3 glow = vColor * intensity * intensity * vBrightness;
       
-      gl_FragColor = vec4(glow, intensity);
+      // Apply color and brightness
+      vec3 finalColor = vColor * intensity * vBrightness;
+      
+      gl_FragColor = vec4(finalColor, intensity);
     }
   `;
-  
   // Create geometry
   const starGeometry = new THREE.BufferGeometry();
   const positions = new Float32Array(starCount * 3);

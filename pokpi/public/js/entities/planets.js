@@ -22,10 +22,12 @@ export const createPlanets = (engine) => {
   
   // Planet fragment shader
   const planetFragmentShader = `
-    uniform vec3 planetColor;
+    uniform vec3 baseColor;
     uniform vec3 atmosphereColor;
     uniform float time;
     uniform float glowIntensity;
+    uniform float noiseScale;
+    uniform float atmosphereIntensity;
     
     varying vec2 vUv;
     varying vec3 vNormal;
@@ -104,19 +106,19 @@ export const createPlanets = (engine) => {
     
     void main() {
       // Calculate surface features using noise
-      float noise = snoise(vec3(vUv * 10.0, time * 0.1));
+      float noise = snoise(vec3(vUv * noiseScale, time * 0.1));
       
       // Fresnel effect for atmosphere
       float fresnel = pow(1.0 - abs(dot(normalize(vNormal), vec3(0.0, 0.0, 1.0))), 2.0);
       
       // Mix planet color with noise and atmosphere
-      vec3 finalColor = mix(planetColor, planetColor * (0.8 + noise * 0.4), 0.5);
+      vec3 finalColor = mix(baseColor, baseColor * (0.8 + noise * 0.4), 0.5);
       
       // Apply atmosphere with glow intensity
       vec3 glowColor = atmosphereColor * glowIntensity;
       finalColor = mix(finalColor, glowColor, fresnel * 0.6);
       
-      gl_FragColor = vec4(finalColor, 1.0);
+      gl_FragColor = vec4(finalColor, 1.0); // Always fully opaque
     }
   `;
   
@@ -146,13 +148,18 @@ export const createPlanets = (engine) => {
     // Create shader material
     const planetMaterial = new THREE.ShaderMaterial({
       uniforms: {
-        planetColor: { value: planetColor },
-        atmosphereColor: { value: atmosphereColor },
         time: { value: 0 },
-        glowIntensity: { value: 1.0 }
+        baseColor: { value: planetColor },
+        atmosphereColor: { value: atmosphereColor },
+        glowIntensity: { value: 1.0 },
+        noiseScale: { value: 10.0 },
+        atmosphereIntensity: { value: 0.5 }
       },
       vertexShader: planetVertexShader,
-      fragmentShader: planetFragmentShader
+      fragmentShader: planetFragmentShader,
+      side: THREE.FrontSide,
+      transparent: false, // Ensure it's not transparent
+      opacity: 1.0
     });
     
     // Create mesh

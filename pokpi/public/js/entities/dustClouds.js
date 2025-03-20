@@ -1,57 +1,58 @@
 /**
  * Dust Clouds Entity
- * Creates procedural dust clouds with custom shaders
+ * Creates visible dust clouds in space
  */
 import * as THREE from 'three';
 
 export const createDustClouds = (engine) => {
-  // Custom dust cloud vertex shader
+  // Custom vertex shader for dust clouds
   const dustVertexShader = `
-    attribute float size;
-    attribute vec3 customColor;
     uniform float time;
+    attribute float size;
+    attribute vec3 color;
     varying vec3 vColor;
     
     void main() {
-      vColor = customColor;
+      vColor = color;
       
-      // Slow drift motion
+      // Animate dust particles
       vec3 pos = position;
-      pos.x += sin(time * 0.1 + position.z * 0.01) * 5.0;
-      pos.y += cos(time * 0.1 + position.x * 0.01) * 5.0;
-      pos.z += sin(time * 0.1 + position.y * 0.01) * 5.0;
+      pos.x += sin(time * 0.1 + position.z * 0.05) * 5.0;
+      pos.y += cos(time * 0.15 + position.x * 0.05) * 5.0;
+      pos.z += sin(time * 0.08 + position.y * 0.05) * 5.0;
       
       vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
-      gl_PointSize = size * (100.0 / -mvPosition.z);
+      gl_PointSize = size * (300.0 / -mvPosition.z);
       gl_Position = projectionMatrix * mvPosition;
     }
   `;
   
-  // Custom dust cloud fragment shader
+  // Custom fragment shader for dust clouds
   const dustFragmentShader = `
     varying vec3 vColor;
     
     void main() {
-      float r = distance(gl_PointCoord, vec2(0.5, 0.5));
-      if (r > 0.5) discard;
+      // Create circular particles with soft edges
+      float r = 0.5 * length(gl_PointCoord - vec2(0.5, 0.5));
+      float alpha = 1.0 - smoothstep(0.3, 0.5, r);
       
-      // Soft particles
-      float opacity = 0.3 * (1.0 - r * 2.0);
-      gl_FragColor = vec4(vColor, opacity);
+      gl_FragColor = vec4(vColor, alpha * 0.6); // Increased opacity
     }
   `;
   
-  // Create geometry
-  const dustCount = 20000;
+  // Create dust cloud geometry
   const dustGeometry = new THREE.BufferGeometry();
+  const dustCount = 10000;
+  
+  // Create positions for dust particles
   const positions = new Float32Array(dustCount * 3);
   const colors = new Float32Array(dustCount * 3);
   const sizes = new Float32Array(dustCount);
   
-  // Generate random dust particles
+  // Generate dust particles in a large volume
   for (let i = 0; i < dustCount; i++) {
-    // Position in a large sphere
-    const radius = 500 + Math.random() * 2500;
+    // Position dust in a large spherical volume
+    const radius = 2000 + Math.random() * 3000;
     const theta = Math.random() * Math.PI * 2;
     const phi = Math.acos(2 * Math.random() - 1);
     
@@ -59,33 +60,40 @@ export const createDustClouds = (engine) => {
     positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
     positions[i * 3 + 2] = radius * Math.cos(phi);
     
-    // Dust color (subtle blues and whites)
-    const intensity = 0.3 + Math.random() * 0.2;
-    colors[i * 3] = intensity;
-    colors[i * 3 + 1] = intensity;
-    colors[i * 3 + 2] = intensity + Math.random() * 0.2;
+    // Vary colors slightly for visual interest
+    const colorBase = 0.5 + Math.random() * 0.5; // Brighter colors
+    colors[i * 3] = colorBase * (0.7 + Math.random() * 0.3);
+    colors[i * 3 + 1] = colorBase * (0.7 + Math.random() * 0.3);
+    colors[i * 3 + 2] = colorBase * (0.8 + Math.random() * 0.2);
     
-    // Dust size
-    sizes[i] = 1 + Math.random() * 4;
+    // Vary sizes for depth perception
+    sizes[i] = 2.0 + Math.random() * 8.0; // Larger particles
   }
   
   // Set attributes
   dustGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  dustGeometry.setAttribute('customColor', new THREE.BufferAttribute(colors, 3));
+  dustGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
   dustGeometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
   
-  // Create shader material
+  // Create material
   const dustMaterial = new THREE.ShaderMaterial({
     uniforms: {
       time: { value: 0 }
     },
     vertexShader: dustVertexShader,
     fragmentShader: dustFragmentShader,
-    blending: THREE.AdditiveBlending,
+    transparent: true,
     depthWrite: false,
-    transparent: true
+    blending: THREE.AdditiveBlending
   });
   
-  // Create points
-  return new THREE.Points(dustGeometry, dustMaterial);
+  // Create points system
+  const dustClouds = new THREE.Points(dustGeometry, dustMaterial);
+  
+  // Add update method
+  dustClouds.update = (deltaTime) => {
+    dustClouds.material.uniforms.time.value += deltaTime;
+  };
+  
+  return dustClouds;
 };

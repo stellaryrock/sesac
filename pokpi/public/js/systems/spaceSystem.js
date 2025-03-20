@@ -10,6 +10,7 @@ import { createPlanets } from '../entities/planets.js';
 import { createSkybox } from '../entities/skybox.js';
 import { createStellarPhenomenon } from '../entities/stellar.js';
 import { createSplender } from '../entities/splender.js';
+import { createSpaceship } from '../entities/spaceship.js';
 
 export const spaceSystem = {
   name: 'space',
@@ -30,7 +31,9 @@ export const spaceSystem = {
     this.entities.skybox = createSkybox(engine);
     this.entities.stellar = createStellarPhenomenon(engine);
     this.entities.splender = createSplender(engine);
-    
+
+    this.entities.spaceship = createSpaceship(engine);
+
     // Add all entities to the scene
     Object.entries(this.entities).forEach(([key, entity]) => {
       console.log(`Adding ${key} to scene`);
@@ -91,6 +94,12 @@ export const spaceSystem = {
     if (this.entities.splender) {
       this.entities.splender.rotation.y += deltaTime * 0.05;
       this.entities.splender.rotation.x += deltaTime * 0.03;
+    }
+
+    // Animate the spaceship
+    if (this.entities.spaceship) {
+      this.entities.spaceship.rotation.y += deltaTime * 0.05;
+      this.entities.spaceship.rotation.x += deltaTime * 0.03;
     }
   }
 };

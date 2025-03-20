@@ -259,7 +259,7 @@ export const cameraSystem = {
   },
   
   // Update system
-  update(deltaTime, engine) {
+  update(deltaTime) {
     // Apply damping to camera velocity if using physics
     if (this.camera.physics && this.camera.physics.velocity) {
       // Apply damping only if not actively moving
@@ -268,6 +268,11 @@ export const cameraSystem = {
         // Apply slight damping to make movement smoother
         this.camera.physics.velocity.multiplyScalar(0.95);
       }
+    }
+    
+    // Update spaceship position to follow camera
+    if (this.engine.entities.spaceship) {
+      this.engine.entities.spaceship.update(deltaTime, this.camera);
     }
   }
 }; 

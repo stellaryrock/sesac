@@ -8,6 +8,7 @@ import { spaceSystem } from './systems/spaceSystem.js';
 import { cameraSystem } from './systems/cameraSystem.js';
 import { physicsSystem } from './systems/physicsSystem.js';
 import { createCameraControls } from './ui/cameraControls.js';
+import { createEntityInfoSystem } from './ui/entityInfo.js';
 
 // Global camera control state
 const cameraControls = {
@@ -35,14 +36,21 @@ export function initializeApp() {
   
   // Initialize UI components
   const uiControls = createCameraControls(engine);
+  const entityInfoSystem = createEntityInfoSystem(engine);
   
   // Start the game loop
   engine.start();
   
-  // Add custom update function for UI
+  // Add custom update functions for UI
   if (uiControls && uiControls.update) {
     engine.addCustomUpdate((deltaTime) => {
       uiControls.update(deltaTime);
+    });
+  }
+  
+  if (entityInfoSystem && entityInfoSystem.update) {
+    engine.addCustomUpdate(() => {
+      entityInfoSystem.update();
     });
   }
   
@@ -61,6 +69,13 @@ export function initializeApp() {
       e.preventDefault();
     }
   }, { passive: false });
+  
+  // Clean up on window unload
+  window.addEventListener('unload', () => {
+    if (entityInfoSystem && entityInfoSystem.dispose) {
+      entityInfoSystem.dispose();
+    }
+  });
   
   // Return the engine instance for potential external access
   return engine;
@@ -115,11 +130,6 @@ function setupGlobalCameraControls(engine) {
   // Mouse leave event
   document.addEventListener('mouseleave', () => {
     cameraControls.isDragging = false;
-  });
-  
-  // Add custom update to engine
-  engine.addCustomUpdate(() => {
-    // This is where we could add additional camera behavior if needed
   });
 }
 
