@@ -75,11 +75,11 @@ export const createSplender = (engine) => {
   `;
   
   // Create a complex geometry
-  const splenderGeometry = new THREE.TorusKnotGeometry(150, 40, 128, 32, 2, 3);
+  const splenderGeometry = new THREE.TorusKnotGeometry(75, 20, 128, 32, 2, 3);
   
   // Choose vibrant colors
-  const baseColor = new THREE.Color(0.1, 0.5, 0.9); // Deep blue
-  const glowColor = new THREE.Color(0.9, 0.3, 0.9); // Magenta
+  const baseColor = new THREE.Color(0.2, 0.5, 1.0); // Deep blue
+  const glowColor = new THREE.Color(0.5, 0.8, 1.0); // Light blue
   
   // Create shader material
   const splenderMaterial = new THREE.ShaderMaterial({
@@ -92,6 +92,7 @@ export const createSplender = (engine) => {
     fragmentShader: splenderFragmentShader,
     transparent: true,
     side: THREE.DoubleSide,
+    depthWrite: false,
     blending: THREE.AdditiveBlending
   });
   
@@ -99,7 +100,7 @@ export const createSplender = (engine) => {
   const splenderMesh = new THREE.Mesh(splenderGeometry, splenderMaterial);
   
   // Position in space
-  splenderMesh.position.set(800, 200, -1200);
+  splenderMesh.position.set(400, 100, -600);
   
   // Add physics properties if physics system exists
   if (engine.getSystem('physics')) {
@@ -109,8 +110,8 @@ export const createSplender = (engine) => {
     physicsSystem.registerObject(splenderMesh);
     
     // Set physics properties
-    splenderMesh.physics.mass = 5000;
-    splenderMesh.physics.collisionRadius = 200;
+    splenderMesh.physics.mass = 2500;
+    splenderMesh.physics.collisionRadius = 100;
     splenderMesh.physics.velocity = new THREE.Vector3(0, 0.5, 0);
     
     // Add orbital particles that are affected by gravity
@@ -134,7 +135,7 @@ export const createSplender = (engine) => {
       
       // Position around the splender
       const angle = Math.random() * Math.PI * 2;
-      const radius = 220 + Math.random() * 100;
+      const radius = 110 + Math.random() * 50;
       particle.position.set(
         splenderMesh.position.x + Math.cos(angle) * radius,
         splenderMesh.position.y + (Math.random() - 0.5) * 100,
@@ -168,6 +169,13 @@ export const createSplender = (engine) => {
   // Add a point light
   const light = new THREE.PointLight(glowColor, 2, 1000);
   splenderMesh.add(light);
+  
+  // Set user data for identification
+  splenderMesh.userData = {
+    type: 'splender',
+    name: 'Cosmic Splender',
+    description: 'A rare and beautiful cosmic phenomenon'
+  };
   
   return splenderMesh;
 };

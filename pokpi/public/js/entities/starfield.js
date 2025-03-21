@@ -8,13 +8,7 @@ export const createStarfield = (engine) => {
   // Number of stars to render in the starfield
   const starCount = 15000;
   
-  // Define color range from gray to white for stars
-  const colorRange = {
-    min: new THREE.Color(0.7, 0.7, 0.7),  // Light gray
-    max: new THREE.Color(1.0, 1.0, 1.0)   // Pure white
-  };
-  
-  // Custom star vertex shader
+  // Custom star vertex shader with enhanced brightness and glow
   const starVertexShader = `
     attribute float size;
     attribute vec3 customColor;
@@ -22,24 +16,34 @@ export const createStarfield = (engine) => {
     uniform float time;
     varying vec3 vColor;
     varying float vBrightness;
+    varying float vGlow;
     
     void main() {
       vColor = customColor;
-      vBrightness = brightness;
       
-      // Add subtle twinkling effect
-      float twinkle = sin(time * 3.0 + position.x * 0.5 + position.y * 0.3 + position.z * 0.2) * 0.5 + 0.5;
+      // Enhanced brightness factor
+      vBrightness = brightness * 1.5;
+      
+      // Add more pronounced twinkling effect
+      float twinkle = sin(time * 3.0 + position.x * 0.5 + position.y * 0.3 + position.z * 0.2) * 0.7 + 0.8;
+      
+      // Add pulsing glow effect
+      float pulse = sin(time * 2.0 + position.y * 0.2) * 0.3 + 0.7;
+      vGlow = pulse * twinkle * 1.4;
       
       vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-      gl_PointSize = size * (300.0 / -mvPosition.z) * (0.8 + 0.4 * twinkle);
+      
+      // Increase size for more visible stars
+      gl_PointSize = size * (350.0 / -mvPosition.z) * (0.9 + 0.6 * twinkle);
       gl_Position = projectionMatrix * mvPosition;
     }
   `;
   
-  // Custom star fragment shader - no texture needed
+  // Custom star fragment shader
   const starFragmentShader = `
     varying vec3 vColor;
     varying float vBrightness;
+    varying float vGlow;
     
     void main() {
       // Calculate distance from center of point
@@ -48,15 +52,21 @@ export const createStarfield = (engine) => {
       // Discard pixels outside the star radius
       if (r > 0.5) discard;
       
-      // Simple falloff from center to edge
-      float intensity = 1.0 - r * 2.0;
+      // Enhanced falloff from center to edge with more pronounced core
+      float intensity = pow(1.0 - r * 2.0, 1.5);
       
-      // Apply color and brightness
-      vec3 finalColor = vColor * intensity * vBrightness;
+      // Apply color and enhanced brightness
+      vec3 finalColor = vColor * intensity * vBrightness * vGlow;
+      
+      // Add extra glow to the core
+      if (r < 0.2) {
+        finalColor += vColor * (0.2 - r) * 5.0 * vGlow;
+      }
       
       gl_FragColor = vec4(finalColor, intensity);
     }
   `;
+  
   // Create geometry
   const starGeometry = new THREE.BufferGeometry();
   const positions = new Float32Array(starCount * 3);
@@ -67,7 +77,7 @@ export const createStarfield = (engine) => {
   // Generate random stars
   for (let i = 0; i < starCount; i++) {
     // Position in a large sphere
-    const radius = 1000 + Math.random() * 4000;
+    const radius = 500 + Math.random() * 2000;
     const theta = Math.random() * Math.PI * 2;
     const phi = Math.acos(2 * Math.random() - 1);
     
@@ -103,15 +113,15 @@ export const createStarfield = (engine) => {
     // Random star size (some bigger than others)
     if (Math.random() > 0.99) {
       // Very large stars (rare)
-      sizes[i] = 15 + Math.random() * 20;
+      sizes[i] = 7.5 + Math.random() * 10;
       brightness[i] = 1.5 + Math.random() * 0.5;
     } else if (Math.random() > 0.95) {
       // Larger stars
-      sizes[i] = 8 + Math.random() * 12;
+      sizes[i] = 4 + Math.random() * 6;
       brightness[i] = 1.2 + Math.random() * 0.3;
     } else {
       // Normal stars
-      sizes[i] = 1 + Math.random() * 3;
+      sizes[i] = 0.5 + Math.random() * 1.5;
       brightness[i] = 0.8 + Math.random() * 0.4;
     }
   }
@@ -122,7 +132,7 @@ export const createStarfield = (engine) => {
   starGeometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
   starGeometry.setAttribute('brightness', new THREE.BufferAttribute(brightness, 1));
   
-  // Create shader material without texture
+  // Create shader material
   const starMaterial = new THREE.ShaderMaterial({
     uniforms: {
       time: { value: 0 }
@@ -135,5 +145,13 @@ export const createStarfield = (engine) => {
   });
   
   // Create points
-  return new THREE.Points(starGeometry, starMaterial);
+  const starfield = new THREE.Points(starGeometry, starMaterial);
+  
+  // Set user data for identification
+  starfield.userData = {
+    type: 'starfield',
+    name: 'Starfield'
+  };
+  
+  return starfield;
 }; 

@@ -8,19 +8,36 @@ export const createNebulae = (engine) => {
   // Array to hold all nebula objects
   const nebulae = [];
   
-  // Create 3-5 nebulae at different locations
-  const nebulaCount = 3 + Math.floor(Math.random() * 3);
+  // Create 2-3 nebulae at different locations (reduced count)
+  const nebulaCount = 2 + Math.floor(Math.random() * 2);
   
   for (let i = 0; i < nebulaCount; i++) {
     // Custom nebula vertex shader
     const nebulaVertexShader = `
+      uniform float time;
       varying vec3 vPosition;
       varying vec2 vUv;
+      varying vec3 vNormal;
       
       void main() {
         vPosition = position;
         vUv = uv;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        
+        // Apply rotation to the vertex position
+        float rotationSpeed = 0.1;
+        float angle = time * rotationSpeed;
+        
+        // Rotate around Y axis
+        float cosY = cos(angle);
+        float sinY = sin(angle);
+        vec3 rotatedPosition = vec3(
+          position.x * cosY - position.z * sinY,
+          position.y,
+          position.x * sinY + position.z * cosY
+        );
+        
+        vNormal = normalize(normalMatrix * normal);
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(rotatedPosition, 1.0);
       }
     `;
     
@@ -28,10 +45,12 @@ export const createNebulae = (engine) => {
     const nebulaFragmentShader = `
       uniform vec3 color1;
       uniform vec3 color2;
+      uniform vec3 glowColor;
       uniform float time;
       
       varying vec3 vPosition;
       varying vec2 vUv;
+      varying vec3 vNormal;
       
       // Simplex noise functions
       vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
@@ -106,49 +125,70 @@ export const createNebulae = (engine) => {
       }
       
       void main() {
-        // Create animated noise
-        float noise1 = snoise(vec3(vPosition.x * 0.01, vPosition.y * 0.01, vPosition.z * 0.01 + time * 0.05));
-        float noise2 = snoise(vec3(vPosition.x * 0.02, vPosition.y * 0.02, vPosition.z * 0.02 - time * 0.03));
+        // Create noise patterns for the nebula
+        float noiseScale = 0.01;
+        float noiseTime = time * 0.1;
         
-        // Combine noise
+        // Create multiple layers of noise
+        float noise1 = snoise(vPosition * noiseScale + vec3(noiseTime, 0.0, 0.0));
+        float noise2 = snoise(vPosition * noiseScale * 2.0 + vec3(0.0, noiseTime, 0.0));
+        
+        // Combine noise patterns
         float combinedNoise = (noise1 + noise2) * 0.5 + 0.5;
         
-        // Mix colors based on noise
-        vec3 finalColor = mix(color1, color2, combinedNoise);
+        // Mix colors based on noise with increased brightness
+        vec3 baseColor = mix(color1, color2, combinedNoise);
+        
+        // Add pulsating effect
+        float pulse = 0.8 + 0.4 * sin(time * 0.3);
+        
+        // Add edge glow effect
+        float edgeGlow = pow(1.0 - abs(dot(vNormal, vec3(0.0, 0.0, 1.0))), 2.0);
+        
+        // Brighten the colors
+        vec3 finalColor = baseColor * 1.5 + glowColor * edgeGlow * pulse;
         
         // Apply distance falloff for soft edges
         float distanceFromCenter = length(vPosition) / 500.0;
-        float edgeFalloff = 1.0 - smoothstep(0.8, 1.0, distanceFromCenter);
-        gl_FragColor = vec4(finalColor, edgeFalloff * combinedNoise * 0.5);
+        float edgeFalloff = 1.0 - smoothstep(0.7, 1.0, distanceFromCenter);
+        
+        // Increased opacity for more visible glow
+        float opacity = edgeFalloff * (combinedNoise * 0.5 + 0.3) * (1.0 + edgeGlow * 0.5);
+        
+        gl_FragColor = vec4(finalColor, opacity);
       }
     `;
     
-    // Choose nebula colors
-    let color1, color2;
+    // Choose nebula colors with increased brightness
+    let color1, color2, glowColor;
     const colorType = Math.random();
     
     if (colorType > 0.7) {
-      // Blue/purple nebula
-      color1 = new THREE.Color(0.2, 0.4, 0.8);
-      color2 = new THREE.Color(0.6, 0.3, 0.8);
+      // Bright blue/purple nebula
+      color1 = new THREE.Color(0.4, 0.6, 1.0);
+      color2 = new THREE.Color(0.8, 0.5, 1.0);
+      glowColor = new THREE.Color(0.5, 0.3, 1.0);
     } else if (colorType > 0.4) {
-      // Red/orange nebula
-      color1 = new THREE.Color(0.8, 0.2, 0.2);
-      color2 = new THREE.Color(0.8, 0.5, 0.2);
+      // Bright red/orange nebula
+      color1 = new THREE.Color(1.0, 0.4, 0.3);
+      color2 = new THREE.Color(1.0, 0.7, 0.3);
+      glowColor = new THREE.Color(1.0, 0.5, 0.2);
     } else {
-      // Green/teal nebula
-      color1 = new THREE.Color(0.2, 0.6, 0.4);
-      color2 = new THREE.Color(0.2, 0.6, 0.8);
+      // Bright green/teal nebula
+      color1 = new THREE.Color(0.3, 0.9, 0.5);
+      color2 = new THREE.Color(0.3, 0.8, 1.0);
+      glowColor = new THREE.Color(0.2, 1.0, 0.8);
     }
     
-    // Create geometry (large sphere for the nebula)
-    const nebulaGeometry = new THREE.SphereGeometry(500 + Math.random() * 300, 32, 32);
+    // Create geometry (smaller sphere for the nebula)
+    const nebulaGeometry = new THREE.SphereGeometry(200 + Math.random() * 100, 64, 64);
     
     // Create shader material
     const nebulaMaterial = new THREE.ShaderMaterial({
       uniforms: {
         color1: { value: color1 },
         color2: { value: color2 },
+        glowColor: { value: glowColor },
         time: { value: 0 }
       },
       vertexShader: nebulaVertexShader,
@@ -179,6 +219,21 @@ export const createNebulae = (engine) => {
       Math.random() * Math.PI * 2,
       Math.random() * Math.PI * 2
     );
+    
+    // Add a point light inside the nebula for extra glow
+    const light = new THREE.PointLight(
+      glowColor,
+      1.0,
+      500
+    );
+    nebula.add(light);
+    
+    // Set user data for identification
+    nebula.userData = {
+      type: 'nebula',
+      name: `Nebula ${i+1}`,
+      description: `A cosmic cloud of gas and dust`
+    };
     
     // Add to array
     nebulae.push(nebula);
