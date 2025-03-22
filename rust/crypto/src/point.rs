@@ -84,13 +84,10 @@ impl Add for Point {
         
         // Case 3: self and other are different points
         if x1 != x2 {
-            // Calculate the slope of the line between the two points
             let slope = (y2 - y1) as f64 / (x2 - x1) as f64;
             
-            // Calculate the new x coordinate
             let x3 = (slope.powi(2) - x1 as f64 - x2 as f64).round() as i64;
             
-            // Calculate the new y coordinate
             let y3 = (slope * (x1 as f64 - x3 as f64) - y1 as f64).round() as i64;
             
             return Point::new(Some(x3), Some(y3), self.a, self.b);
@@ -98,18 +95,14 @@ impl Add for Point {
         
         // Case 4: self and other are the same point
         if self == other {
-            // Handle the case where the tangent line is vertical
             if y1 == 0 {
                 return Point::new(None, None, self.a, self.b);
             }
             
-            // Calculate the slope of the tangent line
             let slope = (3.0 * (x1.pow(2) as f64) + self.a as f64) / (2.0 * y1 as f64);
-            
-            // Calculate the new x coordinate
+
             let x3 = (slope.powi(2) - 2.0 * x1 as f64).round() as i64;
             
-            // Calculate the new y coordinate
             let y3 = (slope * (x1 as f64 - x3 as f64) - y1 as f64).round() as i64;
             
             return Point::new(Some(x3), Some(y3), self.a, self.b);
