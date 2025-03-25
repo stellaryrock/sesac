@@ -25,7 +25,5 @@ fn main() {
         },
         Err(e) => println!("Error creating point: {}", e),
     }
-
-    
     
 }
