@@ -1,1 +1,0 @@
-/usr/bin/c++ CMakeFiles/p2p_jsonrpc.dir/src/main.cpp.o CMakeFiles/p2p_jsonrpc.dir/src/rpc_server.cpp.o -o p2p_jsonrpc
