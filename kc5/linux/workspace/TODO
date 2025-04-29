@@ -1,0 +1,9 @@
+git status
+git diff 
+git add
+git commit
+git stash
+
+
+------------------------------
+git push
