@@ -2,7 +2,7 @@ console.log("Running js file...");
 //console.log("a: ", a);  // ReferenceError
 //console.log("i: ", i);  // ReferenceError
 console.log("b: ", b); //b: undefined
-
+call0();  // 함수 선언이 이루어짐
 
 function call0()
 {
@@ -13,4 +13,3 @@ function call0()
 }
 
 var b;
-call0();
