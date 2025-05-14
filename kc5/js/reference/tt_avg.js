@@ -9,9 +9,9 @@ const P = 10 ** 2;
 let sum = 0;
 let cnt = 0;
 
-for( const price of prices)
+for( const price of prices )
 {
-  if( price === null || isNaN(price)) break;
+  if( price === null || isNaN(price) ) break;
   sum += price * P ;
   cnt += 1;
 }
