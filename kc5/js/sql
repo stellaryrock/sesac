@@ -1,0 +1,61 @@
+use testdb;
+
+select database() from dual;
+show processlist;
+
+select * FROM Emp where
+
+-- ctrl - shift - enter 전체실행
+-- 블록 지정 하면 해당 블록만 실행
+
+create table T(
+	id int unsigned auto_increment PRIMARY KEY NOT NULL,
+    name varchar(31) NOT NULL    
+);
+
+
+select * from T;
+
+-- select, update, insert, delete
+insert into T(name) values('홍길동');
+-- vulk insert
+insert into T(name) values('박길동'), ('최길동'), ('김길동');
+
+-- insert 하게 되면 t.ibd 라는 파일이 생성된다. ( 이진수 형태의 바이너리 파일이다. )
+
+-- Preprocessor / Query Optimizer 
+
+-- cluster index : primary key 순서대로 저장되어 있음.
+
+select t.* from T t where id = 10;
+-- select t.* from T t where id = ?; 형태로 저장해놓고  ? 만 변형해서 호출
+
+-- ctrl + shift + l : 한줄 지우기
+-- ctrl + enter : 한줄 실행
+show index from T;
+
+-- add modify change drop
+alter table T add column email varchar(155) null;  
+alter table T add column mobile varchar(11) not null;
+
+update T set mobile = concat('0101234000', id );
+
+-- index 에서 에러가 발생
+select * from T;
+
+insert into T(name, email, mobile) values('홍길동', 'hong@gmail.com', '01012340001');
+
+-- 2명이면 둘다 지워짐.
+delete from T where name = '최길동' ;
+
+insert into T(name, email, mobile) values ('홍길동' , 'hong@gmail.com', '01012340010') on duplicate key update name = '홍길동1번';
+
+insert into T(name, email, mobile) values ('홍길동1' , 'hong@gmail.com', '01012340010') on duplicate key update name = concat(name, '1');
+
+-- skip 됐을 때는 id 가 점프가 일어남.
+insert ignore into T(name, email, mobile) values ('박길동' , 'hong@gmail.com', '01012340010') ;
+
+
+show processlist;
+
+

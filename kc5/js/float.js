@@ -1,6 +1,6 @@
 // function add(num1, num2, precision = 1){  
-//   if( num1 === null || isNaN(num1) ) num1 = 0; // NaN À¸·Î ÇÒÁö, 0 À¸·Î ÇÒÁö ¸ğ¸£°Ú¾î¿ä.
-//   if( num2 === null || isNaN(num2) ) num2 = 0; // sum À» ¿°µÎ¿¡ µÎ°í ÀÏ´Ü 0 À¸·Î Ã³¸®ÇÏ°Ú½À´Ï´Ù.
+//   if( num1 === null || isNaN(num1) ) num1 = 0; // NaN ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½, 0 ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ğ¸£°Ú¾ï¿½ï¿½.
+//   if( num2 === null || isNaN(num2) ) num2 = 0; // sum ï¿½ï¿½ ï¿½ï¿½ï¿½Î¿ï¿½ ï¿½Î°ï¿½ ï¿½Ï´ï¿½ 0 ï¿½ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½ï¿½Ï°Ú½ï¿½ï¿½Ï´ï¿½.
 
 //   num1 = parseFloat(num1);
 //   num2 = parseFloat(num2);
@@ -58,41 +58,54 @@
 //     toNumber : () => num,
 //     getState : () => [ p, adjusted ],
 //     add : (other) => {
-//       // TODO : p °¡ ´Ù¸¦ °æ¿ì
+//       // TODO : p 
 //       const [ otherNum, otherP ] = other.getState();
 //     }
 //   }
 // };
 
+// let add = addFloat(2);
+
+// let test = [
+//   add( 1.234, 234.2, 2 ),  // 235.4;
+//   add( '123', 1.23, 1 ),   // 124.2;
+//   add( null, 123.12 ),     // NaN
+//   add( 'xyz', 1),          // NaN
+// ]
+
+// test.forEach(console.log);
+
 const prices = [
   10.34232323, 15, 'xxx', 5.67899, null, 20.9, 1.005121, 0, 15, undefined, 0.5
 ];
 
-let addfunc = (p) => (num1, num2) => {
+let addFloat = (p) => (num1, num2) => {
   if( num1 === null || isNaN(num1) ) num1 = 0;
   if( num2 === null || isNaN(num2) ) num2 = 0;
 
   return Math.trunc( num1 * (10 ** p) + num2 * (10 ** p) ) / (10 ** p);
 }
 
-let add = addfunc(2);
+let sum = prices.reduce(addFloat(2));
+console.log("ğŸš€ ~ sum:", sum)
 
-let test = [
-  add( 1.234, 234.2, 2 ),  // 235.4;
-  add( '123', 1.23, 1 ),   // 124.2;
-  add( null, 123.12 ),     // NaN
-  add( 'xyz', 1),          // NaN
-]
-
-test.forEach(console.log);
-
-let sum = prices.reduce(add);
-console.log(sum);
-
-
+const add = addFloat(2);
 // for( i = 0.1; i <= 1; i = add(i , 0.1) )
 // {
 //   console.log(i);
 // }
 
-//TODO : p °¡ ´Ù¸¥ µÎ ¼öÀÇ µ¡¼À
+//create, delete , alter , drop, 
+
+
+// Object.Entries -> í•´ì‹œ ê°’ì„ iterate ëŒ ìˆ˜ ìˆëŠ” ì´ìœ  ?
+// ë³µí•©í‚¤ ì“°ëŠ”ê²Œ ë³„ë¡œ ì¢‹ì§€ ì•Šì€ì§€? ìœ ì €ì˜ ì¦ê²¨ì°¾ê¸° ( userid, productid )
+// TODO : p ê°€ ë‹¤ë¥¸ ë‘ ìˆ˜ë¥¼ ë”í•˜ê¸°
+// TODO : let avg = prices.reduce(addFloat(2)).devide(prices.length).toNumber();
+
+
+// INSERT INTO í•  ë•Œ ë‹¨ìˆœíˆ ì¶”ê°€í•˜ëŠ”ê²Œ ì•„ë‹ˆë¼ ì´ë¯¸ ìˆëŠ” ê°’ì€ UPDATE, ì—†ìœ¼ë©´ INSERT
+// view, trigger 
+// INSERT IGNORE
+// INSERT INTO ON DUPLICATE KEY UPDATE
+// UML ì€ í•„ìˆ˜ ( ìœ ì¦ˆ ì¼€ì´ìŠ¤ ) => ëª…ì‚¬ë¥¼ í…Œì´ë¸”(CLASS), ë™ì‚¬ëŠ” SQL ë¬¸(METHOD) ìœ¼ë¡œ
