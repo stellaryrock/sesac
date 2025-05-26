@@ -1,7 +1,3 @@
-const toFloat = ( n, p ) => {
-  
-}
-
 const prices = [
   10.34232323, 15, 'xxx', 5.67899, null, 20.9, 1.005121, 0, 15, undefined, 0.5
 ];
