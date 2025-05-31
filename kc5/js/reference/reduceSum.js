@@ -1,6 +1,5 @@
 const prices = [ 10.34232323, 15, 'xxx', 5.67899, null , 20.9, 1.005121, 0, 15, undefined, 0.5 ];
 
-
 const reduceSum =  (arr, p) => ({
     _acc : 0,
     _sum : 0,
