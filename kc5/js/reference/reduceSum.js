@@ -7,7 +7,6 @@ const reduceSum =  (arr, p) => ({
     _arr : arr.filter( n => !isNaN(n) && n !== null ).map( n => Math.trunc(n * ( 10 ** p )) ),
 
     reduce(){
-        console.log(this._arr);
         this.sum = this._arr.reduce((acc, a) => acc + a, 0);
         return this;
     },
