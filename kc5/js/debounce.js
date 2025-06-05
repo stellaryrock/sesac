@@ -1,8 +1,9 @@
-const debounce = ( cb, delay ) => {
-    let timer;
+const debounce = (cb, delay) => {
+    let timer ;
 
-    return (...args) => {
-        if (timer) clearTimeout(timer);
-        timer = setTimeout(cb, delay, ...args);
-    }
+    timer ? clearTimeout(timer) : timer = setTimeout(cb, delay); 
 }
+
+const callbackFn = () => console.log('test') ;
+
+debounce( callbackFn, 5000 );

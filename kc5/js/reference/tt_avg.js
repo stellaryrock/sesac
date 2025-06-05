@@ -11,12 +11,12 @@ let cnt = 0;
 
 for( const price of prices )
 {
-  if( price === null || isNaN(price) ) break;
+  if( price === null || isNaN(price) ) continue;
   sum += price * P ;
   cnt += 1;
 }
 const avg = Math.trunc( sum / cnt ) / P;
-
+console.log(avg);
 for ( const price of prices)
 {
   //const price = p !== null ? Number(p) : null;
