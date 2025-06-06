@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <button id="btn">버튼1</button>
+    <button id="btn2">버튼2</button>
+
+    <script>
+
+        const debounce = (fn, delay) => {
+            let timer;
+
+            return (...args) => {
+                if(timer) clearTimeout(timer);
+                timer = setTimeout(fn, delay, ...args);
+            }
+        }
+
+        const throttle = (fn, delay) => {
+            let timer;
+
+            return (...args) => {
+                if(timer) return;
+                timer = setTimeout( ()=>{
+                    fn(...args);
+                    timer = null;
+                }, delay );
+                
+            }
+        }
+
+
+        const echo = () => {
+            console.log('click!');
+        }
+        
+        btn.addEventListener( "click", debounce(echo, 1000) );
+        btn2.addEventListener( "click", throttle(echo, 1000) );
+
+    </script> 
+</body>
+</html>
