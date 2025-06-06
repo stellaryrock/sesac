@@ -36,7 +36,6 @@ const shallowCopy = {...obj};
 const newObj = deepCopy(obj);
 const newArr = deepCopy(arr);
 
-
 shallowCopy.address.city = 'seoul';
 newObj.address.city = 'busan';
 
