@@ -1,5 +1,4 @@
 memoized 
 shallow / deep copy
 debounce, throttle 
-
-// promise all or all settle
+promise all // all settle

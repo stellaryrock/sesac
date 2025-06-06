@@ -1,12 +1,12 @@
-// ¿¬»êÀÚÀÇ Á¾·ù
+// ì—°ì‚°ìì˜ ì¢…ë¥˜
 let n;
 
-n =  1 + 5; // »ê¼ú ¿¬»êÀÚ, ÀÌÇ× / ´ÜÇ×( ++, -- µî );
-let s = 'a'; // ÇÒ´ç ¿¬»êÀÚ
+n =  1 + 5; // ì‚°ìˆ  ì—°ì‚°ì, ì´í•­ / ë‹¨í•­( ++, -- ë“± );
+let s = 'a'; // í• ë‹¹ ì—°ì‚°ì
 
-s + 'bc'; // ¹®ÀÚ¿­ ¿¬°á(º´ÇÕ) ¿¬»êÀÚ <=> template literal  `${abc}` // ¹®ÀÚ¿­ ¿¬°á ¿¬»êÀÚº¸´Ù template literal È°¿ëÀÌ ´õ È¿À²ÀûÀÓ
-n > 5 ; // ºñ±³ ¿¬»êÀÚ cf. typeof/instanceof/isArray
-s === 'a'; // ³í¸® ºñ±³ (logical comparison) ¿¬»êÀÚ ( cf. !== )
+s + 'bc'; // ë¬¸ìì—´ ì—°ê²°(ë³‘í•©) ì—°ì‚°ì <=> template literal  `${abc}` // ë¬¸ìì—´ ì—°ê²° ì—°ì‚°ìë³´ë‹¤ template literal í™œìš©ì´ ë” íš¨ìœ¨ì ì„
+n > 5 ; // ë¹„êµ ì—°ì‚°ì cf. typeof/instanceof/isArray
+s === 'a'; // ë…¼ë¦¬ ë¹„êµ (logical comparison) ì—°ì‚°ì ( cf. !== )
 console.log( NaN === NaN ); // true? Nah....c false
 console.log( isNaN(NaN) );
 
