@@ -6,6 +6,7 @@ function flattenArray(arr) {
       //result.concat(flattenArray(item));
       result = result.concat(flattenArray(item));
     } else {
+      console.log(item); // 1,2,3,4
       result.push(item);
     }
   });
@@ -14,3 +15,4 @@ function flattenArray(arr) {
 }
 
 console.log(flattenArray([1, [2, [3, [4]]]]));
+

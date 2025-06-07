@@ -20,3 +20,14 @@ const ttf = TryThis();
 console.log(tt, ttf, globalThis.items );
 console.log( tt.constructor.prototype );
 console.log( tt.Prototype, TryThis.prototype, tt.__proto__, TryThis.__proto__);
+
+Object === Object.prototype.constructor // true
+function f() {};
+
+ff = new f();
+console.log( ff.constructor.name );
+fff = f()
+//console.log( fff.constructor.name ); // TypeError
+
+console.log( ff instanceof f ); // true
+console.log(fff instanceof f); // false
