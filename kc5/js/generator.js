@@ -73,20 +73,32 @@ class Subway {
   }
 
   [Symbol.iterator] () {
-    let idx = this.LINE2.indexOf(this.s);
-    let endIndex = this.LINE2.indexOf(this.e); 
-
     
+    let startIdx = this.LINE2.indexOf(this.s);
+    let endIndex = this.LINE2.indexOf(this.e); 
+    let isEnd = false;
 
+    let currentIndex = startIdx - 1;
 
     return {
-      next: () => (idx % this.LINE2.length) !== endIndex + 1 ? { value : this.LINE2[idx++ % this.LINE2.length ], done: false } : { value : undefined, done : true }
+      // next: () => (idx % this.LINE2.length) !== endIndex + 1 ? { value : this.LINE2[idx++ % this.LINE2.length ], done: false } : { value : undefined, done : true }
+      next : () => {
+
+        if( isEnd ) return { value : undefined , done : true };
+
+        currentIndex = (currentIndex + 1) % this.LINE2.length;
+        if(currentIndex === endIndex) isEnd = true;
+
+        return { value: this.LINE2[currentIndex], done : false };
+      }
     }
   }
 }
 
 const routes = new Subway('문래', '신림');
 console.log([...routes]);
+
+
 
 assert.deepStrictEqual(
   [...routes],
@@ -105,8 +117,10 @@ assert.deepStrictEqual(it1.next(), { value: undefined, done: true });
 
 const route3 = new Subway('문래', '합정'); // 46개 정거장이면 통과!
 console.log([...route3])
-return;
+
 assert.strictEqual([...route3].length, 46);
 
 const route4 = new Subway('신도림', '을지로입구'); // 48개 정거장이면 통과!
 assert.strictEqual([...route4].length, 48);
+
+return;
