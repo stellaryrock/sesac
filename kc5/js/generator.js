@@ -98,20 +98,16 @@ class Subway {
 const routes = new Subway('문래', '신림');
 console.log([...routes]);
 
-
-
 assert.deepStrictEqual(
   [...routes],
   ['문래', '대림', '구로디지털단지', '신대방', '신림']
 );
-
 
 const it1 = routes[Symbol.iterator]();
 ['문래', '대림', '구로디지털단지', '신대방', '신림'].forEach((value, i) => {
   assert.deepStrictEqual(it1.next(), { value, done: false });
   console.log(i, routes.toString());
 });
-
 
 assert.deepStrictEqual(it1.next(), { value: undefined, done: true });
 
@@ -123,4 +119,47 @@ assert.strictEqual([...route3].length, 46);
 const route4 = new Subway('신도림', '을지로입구'); // 48개 정거장이면 통과!
 assert.strictEqual([...route4].length, 48);
 
-return;
+// return;
+
+
+// iterable Stack, Queue
+
+class Stack {
+  constructor() {
+    this._arr = [];
+    this._idx = 0;
+  }
+
+  // [Symbol.iterator] = (this._arr[Symbol.iterator]) ?
+  [Symbol.iterator]() {
+    let i = 0;
+
+    return {
+      next: ()=>(
+        i < this._arr.length ? {value : this._arr[i++] , done: false} : {done: true} 
+      )
+    }
+  }
+
+  isEmpty(){
+    return this._arr.length === 0;
+  }
+
+  push(x){
+    this._arr.push(x);
+  }
+
+  pop(){
+    return this._arr.pop();
+  }
+
+  peek(){
+    return this._arr[this._arr.length - 1];
+  }
+}
+
+const s = new Stack();
+s.push(1);
+s.push(4);
+s.push(7);
+console.log("🚀 ~ s:", [...s])
