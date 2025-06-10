@@ -47,7 +47,6 @@ const newArr = deepCopy(arr);
 shallowCopy.address.city = 'seoul';
 newObj.address.city = 'busan';
 
-<<<<<<< HEAD
 console.log( obj, newObj );
 
 
@@ -83,6 +82,4 @@ console.log( obj, newObj3 );
 
 obj.address.city = 'obj';
 console.log( obj, newObj3 );
-=======
 console.log( obj, shallowCopy, newObj );
->>>>>>> 393a50009376d5b0cda1ff03f80524888894af7f
