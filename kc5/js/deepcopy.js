@@ -7,7 +7,12 @@ const obj = {
         city: 'incheon',
         country: 'korea'
     },
+<<<<<<< HEAD
 //    set: new Set([1,2,3]),
+=======
+    [Symbol('hi')] : 'hi',
+    fn : function() { console.log('hi'); }
+>>>>>>> 393a50009376d5b0cda1ff03f80524888894af7f
 }
 
 const arr = [ 'hong', 1, 20, {city: 'incheon', country: 'korea'}];
@@ -20,9 +25,10 @@ const deepCopy = (obj) => {
 
     const ret = Array.isArray(obj) ? [] : {};
 
-    Object
-    .entries(obj)
-    .forEach(([key, value]) => {
+    Reflect
+    .ownKeys(obj)
+    .forEach(key => {
+        value = obj[key];
         ret[key] = (typeof value === 'object' && value !== null) ? deepCopy(value) : value;
         // if(typeof value === 'object' && value !== null)
         //     ret[key] = deepCopy(value);
@@ -41,6 +47,7 @@ const newArr = deepCopy(arr);
 shallowCopy.address.city = 'seoul';
 newObj.address.city = 'busan';
 
+<<<<<<< HEAD
 console.log( obj, newObj );
 
 
@@ -76,3 +83,6 @@ console.log( obj, newObj3 );
 
 obj.address.city = 'obj';
 console.log( obj, newObj3 );
+=======
+console.log( obj, shallowCopy, newObj );
+>>>>>>> 393a50009376d5b0cda1ff03f80524888894af7f
