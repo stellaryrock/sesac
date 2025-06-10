@@ -7,12 +7,9 @@ const obj = {
         city: 'incheon',
         country: 'korea'
     },
-<<<<<<< HEAD
 //    set: new Set([1,2,3]),
-=======
-    [Symbol('hi')] : 'hi',
-    fn : function() { console.log('hi'); }
->>>>>>> 393a50009376d5b0cda1ff03f80524888894af7f
+//    [Symbol('hi')] : 'hi',
+//    fn : function() { console.log('hi'); }
 }
 
 const arr = [ 'hong', 1, 20, {city: 'incheon', country: 'korea'}];
