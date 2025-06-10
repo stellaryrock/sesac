@@ -1,11 +1,13 @@
 const obj = {
+    sym : Symbol('hi'),
     id: 1,
     name: 'hong',
     age: 20,
     address : {
         city: 'incheon',
         country: 'korea'
-    }
+    },
+//    set: new Set([1,2,3]),
 }
 
 const arr = [ 'hong', 1, 20, {city: 'incheon', country: 'korea'}];
@@ -40,3 +42,37 @@ shallowCopy.address.city = 'seoul';
 newObj.address.city = 'busan';
 
 console.log( obj, newObj );
+
+
+// 원시값만을 갖는 객체 kim을 복사하는 프로그램을 Object 의 클래스 메소드 또는 spread(...) 연산자를 사용하지 말고 작성하시오.
+const _shallowCopy = (obj) => {
+    let newObj = {};
+
+    for(key in obj){
+        newObj[key] = obj[key];
+    }
+
+    return newObj;
+}
+
+let newObj2 = _shallowCopy(obj);
+console.log( obj , newObj2 );
+newObj2.address.city = 'newObj';
+console.log( obj, newObj2 );
+
+const _deepCopy = (obj) => {
+    let ret = {};
+
+    for(key in obj){
+        let val = obj[key];
+        ret[key] = (typeof val !== 'object' || val === null) ? val : _deepCopy(val);
+    }
+
+    return ret;
+}
+
+let newObj3= _deepCopy(obj);
+console.log( obj, newObj3 );
+
+obj.address.city = 'obj';
+console.log( obj, newObj3 );
