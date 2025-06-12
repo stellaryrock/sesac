@@ -21,6 +21,7 @@ function fiboRecursive(n){
   
   return fiboRecursive(n-2) + fiboRecursive(n-1);
 }
+
 console.log('2. 순수 재귀를 통해 구현');
 for( let i = 1; i< 10; i++)
   console.log(fiboLoop(i));
@@ -37,3 +38,4 @@ console.log('3. memoization 을 활용하여 구현');
 for( let i = 1; i< 10; i++)
   console.log(memoizedFn(fiboRecursive)(i));
 console.log('--------------------------------------------');
+
