@@ -6,5 +6,7 @@ tmp
 logs
 .vscode
 
+tsconfig.json
+
 .env
 .env.local*

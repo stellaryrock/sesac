@@ -9,6 +9,15 @@ const debounce = ( cb, delay ) => {
         }
 }
 
+const throttle = ( cb, delay ) => {
+    let timer;
+
+    return (...args) => {
+        return !!timer ? undefined : ( timer = setTimeout( () => { cb(...args); timer=null; }, delay) )
+    }
+
+}
+
 
 const cb = (a,b,c) => console.log(a,b,c ,' ... 함수 실행됨');
 
