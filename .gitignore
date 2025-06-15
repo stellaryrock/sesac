@@ -10,5 +10,7 @@ reference
 logs
 .vscode
 
+tsconfig.json
+
 .env
 .env.local*
