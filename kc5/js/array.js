@@ -1,5 +1,5 @@
-// ´ÙÀ½°ú °°Àº push, pop, shift, unshift ¸¦ ¼ø¼ö ÇÔ¼ö·Î ÀÛ¼ºÇÏ½Ã¿À .
-// (´Ü, ÀÔ·Â°ªÀº ´ÙÀ½ ¿¹½Ã·Î ÇÑÁ¤ÇÔ)
+// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ push, pop, shift, unshift ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½ï¿½ï¿½ ï¿½Û¼ï¿½ï¿½Ï½Ã¿ï¿½ .
+// (ï¿½ï¿½, ï¿½Ô·Â°ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ã·ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
 const assert = require('assert');
 
 const arr = [1, 2, 3, 4];
@@ -24,7 +24,7 @@ function shift(array, ...args){
 
 assert.deepStrictEqual(push(arr, 5, 6), [1, 2, 3, 4, 5, 6]);
 assert.deepStrictEqual(pop(arr), 4);
-assert.deepStrictEqual(pop(arr, 2), [3, 4]); // 2°³ ÆË!
+assert.deepStrictEqual(pop(arr, 2), [3, 4]); // 2ï¿½ï¿½ ï¿½ï¿½!
 
 return;
 
@@ -33,7 +33,22 @@ assert.deepStrictEqual(unshift(arr, 7, 8), [7, 8, 1, 2, 3, 4]);
 
 assert.deepStrictEqual(unshift(arr, 7, 8, 10, 11, 14,15), [7, 8, 1, 2, 3, 4]);
 
-assert.deepStrictEqual(shift(arr), [[1], [2, 3, 4]]); // [shiftµÇ´Â ¿ø¼Òµé, ³²Àº ¿ø¼Òµé]
-assert.deepStrictEqual(shift(arr, 2), [[1, 2], [3, 4]]); // 2°³ shift
+assert.deepStrictEqual(shift(arr), [[1], [2, 3, 4]]); // [shiftï¿½Ç´ï¿½ ï¿½ï¿½ï¿½Òµï¿½, ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Òµï¿½]
+assert.deepStrictEqual(shift(arr, 2), [[1, 2], [3, 4]]); // 2ï¿½ï¿½ shift
 
 assert.deepStrictEqual(arr, [1, 2, 3, 4]);
+
+function makeArray(n) {
+  if (n === 1) return [1];
+  return [...makeArray(n - 1), n];
+}
+
+function makeReverseArray(n) {
+  if (n === 1) return [1];
+  return [n, ...makeReverseArray(n - 1)];
+}
+
+function makeArrayTCO(n, arr = []) {
+  if (n === 1) return [1, ...arr];
+  return makeArrayTCO(n - 1, [n, ...arr]);
+}

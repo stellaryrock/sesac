@@ -20,6 +20,38 @@ const reduceSum =  (arr, p) => ({
     }
 });
 
-const n = reduceSum(prices, 2).reduce().divide().toNumber();
-console.log(n);
+const calc = (signFlag, ...args ) => {
+    const P = 10 ** 10 ;
+    let ret = 0;
 
+    for( const [i, n] of Object.entries(args) ){
+        console.log(i , n);
+        const signNum = i !== 0 ? n * signFlag : n;
+
+        ret += Math.trunc(signNum * p);
+    }
+
+    ret = ret / P;
+}
+
+const parseExp = (str) => {
+    const ops = ['+', '-'];
+    let [prev, next] = [0 ,0];
+
+    for( [i, s] of Object.entries(str)){
+        if( s in ops ){
+            prev = i;
+            next = i+1;
+        }
+        str.slice(prev, next);
+    }
+}
+
+const signNumber = (str, p) => ({
+    
+})
+
+
+const n = reduceSum(prices, 2).reduce().divide().toNumber();
+
+module.exports = { reduceSum };
