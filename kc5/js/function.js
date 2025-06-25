@@ -14,10 +14,10 @@ const once = (fn) => {
 const fn = once( (x, y) => console.log( x, y ) );
 
 
-console.log("ðŸš€ ~ fn:", fn(2,4))
-// console.log("ðŸš€ ~ fn:", fn(3,5))
+console.log("?Ÿš? ~ fn:", fn(2,4))
+// console.log("?Ÿš? ~ fn:", fn(3,5))
 
-// console.log("ðŸš€ ~ fn:", fn(4,6))
+// console.log("?Ÿš? ~ fn:", fn(4,6))
 
 
 function template(txt, a,b,c){
@@ -27,4 +27,4 @@ function template(txt, a,b,c){
   console.log( ` c: ${c}`);
 }
 
-template`ì•ˆë…•í•˜ì„¸ìš” ${1} ${2} ${3}`;
+template`?•ˆ?…•?•˜?„¸?š” ${1} ${2} ${3}`;
