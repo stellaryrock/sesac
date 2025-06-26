@@ -8,5 +8,7 @@ logs
 
 tsconfig.json
 
+notyet
+
 .env
 .env.local*
