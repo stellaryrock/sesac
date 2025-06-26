@@ -3,10 +3,12 @@ dist
 build
 tmp
 
+mysql
+docker
+reference
+
 logs
 .vscode
-
-tsconfig.json
 
 notyet
 
