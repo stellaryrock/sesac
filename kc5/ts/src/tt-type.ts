@@ -1,12 +1,14 @@
-//const isStringNumber = (value: unknown): value is [string, number] =>
-  //<이 부분을 작성하시오>
-  
-const f1 = (value: number | string | boolean | [string, number]) => {
+const isStringNumber = (value: unknown): value is [string, number] =>
+//<이 부분을 작성하시오>
+{
+  return Array.isArray(value) && value.length === 2 && typeof value[0] === 'string' && typeof value[1] === 'number';
+}
 
-    if (isStringNumber(value)) {
-      console.log(value[0].toUpperCase(), value[1].toFixed());
-    }
-
+const f1 = (value: number | string | boolean | [string, number]) => 
+{
+  if (isStringNumber(value)) {
+    console.log(value[0].toUpperCase(), value[1].toFixed());
+  }
 };
 
 interface Animal {}
@@ -50,7 +52,6 @@ const totalPrice2 = SIZE.reduce( (currPrice, size) => currPrice + sizeOption2[si
 
 
 // 다음을 interface로 어떻게 정의할까??    type Ud2 = (TUser | TDept) & {addr: string};
-
 interface User {
   id: number;
   name: string;
