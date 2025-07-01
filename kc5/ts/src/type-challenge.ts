@@ -9,7 +9,7 @@ type Person = {
 type PersonPreview = MyPick<Person, 'name' | 'city'>
 
 const  person: PersonPreview = {
-  name : "김승진",
+  name : "NAME",
   city : "서울",
 }
 
