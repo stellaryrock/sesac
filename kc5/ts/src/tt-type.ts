@@ -13,7 +13,7 @@ const f1 = (value: number | string | boolean | [string, number]) =>
 
 interface Animal {}
 interface Dog extends Animal {
-    name: string;
+  name: string;
 }
 interface Cat extends Animal {
     punch(): void;
@@ -21,9 +21,11 @@ interface Cat extends Animal {
 
 //class Retriever implements Dog {}
 
-// function isDog(a: Animal): a is Dog {
-// 	<이 부분을 작성하시오>
-// }
+function isDog(a: Animal): a is Dog {
+	return typeof a === 'object' && a !== null && a.hasOwnProperty("name");
+}
+
+
 const sizeOption = {XS: 1, S: 5, M: 2, L: 2, XL: 4};
 
 const SIZE = [
