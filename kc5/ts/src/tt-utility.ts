@@ -96,7 +96,7 @@ function registUserObj({ name, age }: {name: string; age: number}) {
   return { id, name, age };
 }
 
-type RegistUserObj = Parameters<이용하여 이 부분을 작성해 보세요>;
+type RegistUserObj = Parameters<typeof registUserObj>[0];
 
 const paramObj: RegistUserObj = { name: 'Hong', age: 32 };
 const newUser2 = registUserObj(paramObj);
