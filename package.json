@@ -4,6 +4,15 @@
     "tsc": "^2.0.4"
   },
   "devDependencies": {
-    "react": "^19.1.0"
+    "@vitest/ui": "3.2.4",
+    "react": "^19.1.0",
+    "vitest": "^3.2.4",
+    "vtest": "^1.1.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "test": "vitest --globals",
+    "test:ui": "vitest --ui",
+    "test:cov" : "vitest --coverage"
   }
 }

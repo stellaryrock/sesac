@@ -108,5 +108,5 @@ const deleteArray = (array : number[] | TUser[], startIdxOrKey : number | keyof 
         : (a : TUser) => a[startIdxOrKey] !== endIdxOrValue;
 
     return array.filter(cb);
-  };
+};
 

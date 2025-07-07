@@ -16,7 +16,7 @@ interface IDept {
 }
 
 
-type Combine<T, U> = < 이 부분을 작성하세요 >
+type Combine<T, U> = 
 type ICombined = Combine<IUser, IDept>;
 
 ///------------------------------------------------------------------------------------------------///
@@ -29,9 +29,7 @@ let users = [
     {id: 1, addr: 'Seoul'},
 ];
 
-type FullUser<T> = {
-    [ k in T extends (infer Item)[] ] : 
-}
+type FullUser<T> = Record< keyof (T extends (infer I)[] ? I : never), string | number >;
 
 type __ = FullUser<typeof users>
 
@@ -71,10 +69,14 @@ let combineExclude: ICombineExclude = {
 ///------------------------------------------------------------------------------------------------///
 
 //특정 함수의 인자 타입을 추출하는 유틸리티 타입을 작성하시오. (infer)
-
 type FirstArgs<F> = F extends (...args : [...(infer Arg)]) => infer Ret ? Arg[0] : never;
-type SecondArgs<F> = F extends (...args : [...(infer Arg)]) => infer Ret ? Arg[1] : never;
-type Args<F> = F extends (...args : [...(infer Arg)]) => infer Ret ? Arg : never;
+type SecondArgs<F> = F extends (arg : FirstArgs<F>, arg2 : infer args2, ...args: unknown[] ) => infer Ret ? args2 : never;
+type Args<F> = F extends ( ...args : [...(infer Arg)]) => infer Ret ? Arg : never;
+
+type tt<F> = F extends ( f1 : any, f2: any ) => void ? typeof f1 : never;
+
+type x = tt<typeof add>;
+
 
 function add(a: number, b: string) { 
     return `${a} - ${b}`;
@@ -102,12 +104,21 @@ const paramObj: RegistUserObj = { name: 'Hong', age: 32 };
 const newUser2 = registUserObj(paramObj);
 console.log('🚀  newUser2:', newUser2);
 
-///------------------------------------------------------------------------------------------------///
+//------------------------------------------------------------------------------------------------//
 
 // debounce와 throttle 함수를 TypeScript로 작성하시오.
-// function debounce…
+// args 를 제너릭으로
+type debounce<T extends (...args : any[]) => void > = function( cb : T, delay : number ) : ReturnType<T> {
+    let timer : ReturnType<typeof setTimeout> | undefined = undefined ;
 
-// function throttle…
+    if( timer ){
+        clearTimeout(timer);
+    }
+    timer = setTimeout(cb);
+} 
+
+// 콜백을 제너릭으로 , 제너릭에 콜백 형식으로 제너릭을 제약 걸기.
+
 
 // test
 // const debo = debounce((a:number, b: string) => console.log(a + 1, b), 1000);
@@ -137,7 +148,7 @@ console.log('🚀  newUser2:', newUser2);
 
 // JS 시간에 작성했던 memoized 함수를 범용성을 고려하여 TS로 작성하시오.
 // function memoized
-
+// JSON.stringify([1,2]);
 // // test
 // const memoizeAdd = memoize((a: number, b: number) => {
 //   return a + b;
