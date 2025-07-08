@@ -65,19 +65,19 @@ export class Subway {
   #start   : string;
   #end     : string;
   #didEnd  : boolean = false;
-  startIdx : number;
-  endIdx   : number;
+  #startIdx : number;
+  #endIdx   : number;
 
   constructor(start, end){
     this.#start = start;
     this.#end = end;
 
-    this.startIdx = LINE2.indexOf(start);
-    this.endIdx = LINE2.indexOf(end);
+    this.#startIdx = LINE2.indexOf(start);
+    this.#endIdx = LINE2.indexOf(end);
   }
 
   *[Symbol.iterator](){
-    let i = this.startIdx;
+    let i = this.#startIdx;
 
     for(;LINE2[i] !== this.#end; i= (i+1) % LINE2.length){
       yield LINE2[i];
