@@ -5,8 +5,9 @@ const memoizedFn(fn) => {
 }
 
 const memoizedFibo = memoizedFn(function(n){
-  if( n <= 1 ) return n;
-  return memoizedFibo(n-2) + memoizedFibo(n-1);
+  
+  return n <= 1 ? 1 
+                : memoizedFibo(n-2) + memoizedFibo(n-1);
 });
 
 const fibo = function(n){
