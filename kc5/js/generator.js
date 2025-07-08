@@ -8,7 +8,7 @@ function* add() {
 }
 
 const itAdd = add();
-  this.LINE2 = [
+const LINE2 = [
         '신도림',
         '성수',
         '신설동',
@@ -57,7 +57,7 @@ const itAdd = add();
         '을지로4가',
         '을지로3가',
         '을지로입구'
-      ];
+];
 
 class Subway {
   #start;
