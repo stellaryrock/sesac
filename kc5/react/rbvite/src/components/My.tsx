@@ -1,6 +1,6 @@
-import type { Session } from '../App';
-import Login from './Login';
-import Profile from './Profile';
+import type { Session } from "../App";
+import Login from "./Login";
+import Profile from "./Profile";
 
 type Props = {
   session: Session;
@@ -8,10 +8,8 @@ type Props = {
   logout: () => void;
 };
 
-const My = ({ session: { loginUser, cart }, 
-    login, logout }: Props) => {
-
-  console.log('@@@My');
+const My = ({ session: { loginUser, cart }, login, logout }: Props) => {
+  console.log("@@@My");
 
   return (
     <>
@@ -29,6 +27,5 @@ const My = ({ session: { loginUser, cart },
       </ul>
     </>
   );
-
 };
 export default My;

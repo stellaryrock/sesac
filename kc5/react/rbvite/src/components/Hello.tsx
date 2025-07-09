@@ -1,4 +1,4 @@
-import type { PropsWithChildren } from 'react';
+import type { PropsWithChildren } from "react";
 
 type Props = {
   name: string;
@@ -6,10 +6,17 @@ type Props = {
   plusCount: () => void;
 };
 
-const Hello = ({name, age, plusCount, children}: PropsWithChildren<Props>) => {
+const Hello = ({
+  name,
+  age,
+  plusCount,
+  children,
+}: PropsWithChildren<Props>) => {
   return (
     <>
-      <h1>Hello, {name}({age})</h1>
+      <h1>
+        Hello, {name}({age})
+      </h1>
       {children}
       <button onClick={plusCount}>count + 1</button>
     </>

@@ -3,12 +3,16 @@ type Props = {
 };
 
 const Login = ({ login }: Props) => {
-  console.log('@@@Login');
-  
+  console.log("@@@Login");
+
   return (
     <>
-      <div>Login ID(숫자): <input type='number' /></div>
-      <div>Login Name: <input type='text' /></div>
+      <div>
+        Login ID(숫자): <input type="number" />
+      </div>
+      <div>
+        Login Name: <input type="text" />
+      </div>
       <button onClick={login}>Login</button>
     </>
   );

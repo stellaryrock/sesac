@@ -1,74 +1,62 @@
-(function ex1(){
-  function* add() {
-    const n1 = yield 'first number';
-    const n2 = yield 'second number';
-
-    return n1 + n2;
-  }
-  
-  const itAdd = add();
-})();
-
 const LINE2 = [
-  '신도림',
-  '성수',
-  '신설동',
-  '용두',
-  '신답',
-  '용답',
-  '시청',
-  '충정로',
-  '아현',
-  '이대',
-  '신촌',
-  '공항철도',
-  '홍대입구',
-  '합정',
-  '당산',
-  '영등포구청',
-  '문래',
-  '대림',
-  '구로디지털단지',
-  '신대방',
-  '신림',
-  '봉천',
-  '서울대입구',
-  '낙성대',
-  '사당',
-  '방배',
-  '서초',
-  '교대',
-  '강남',
-  '역삼',
-  '선릉',
-  '삼성',
-  '종합운동장',
-  '신천',
-  '잠실',
-  '잠실나루',
-  '강변',
-  '구의',
-  '건대입구',
-  '뚝섬',
-  '한양대',
-  '왕십리',
-  '상왕십리',
-  '신당',
-  '동대문역사문화공원',
-  '을지로4가',
-  '을지로3가',
-  '을지로입구'
+  "신도림",
+  "성수",
+  "신설동",
+  "용두",
+  "신답",
+  "용답",
+  "시청",
+  "충정로",
+  "아현",
+  "이대",
+  "신촌",
+  "공항철도",
+  "홍대입구",
+  "합정",
+  "당산",
+  "영등포구청",
+  "문래",
+  "대림",
+  "구로디지털단지",
+  "신대방",
+  "신림",
+  "봉천",
+  "서울대입구",
+  "낙성대",
+  "사당",
+  "방배",
+  "서초",
+  "교대",
+  "강남",
+  "역삼",
+  "선릉",
+  "삼성",
+  "종합운동장",
+  "신천",
+  "잠실",
+  "잠실나루",
+  "강변",
+  "구의",
+  "건대입구",
+  "뚝섬",
+  "한양대",
+  "왕십리",
+  "상왕십리",
+  "신당",
+  "동대문역사문화공원",
+  "을지로4가",
+  "을지로3가",
+  "을지로입구",
 ];
 
-
 export class Subway {
-  #start   : string;
-  #end     : string;
-  #didEnd  : boolean = false;
-  #startIdx : number;
-  #endIdx   : number;
+  #start: string;
+  #end: string;
+  #didEnd: boolean = false;
+  #startIdx: number;
+  #endIdx: number;
 
-  constructor(start, end){
+  constructor(start: string, end: string) {
     this.#start = start;
     this.#end = end;
 
@@ -76,14 +64,14 @@ export class Subway {
     this.#endIdx = LINE2.indexOf(end);
   }
 
-  *[Symbol.iterator](){
+  *[Symbol.iterator]() {
     let i = this.#startIdx;
 
-    for(;LINE2[i] !== this.#end; i= (i+1) % LINE2.length){
+    for (; LINE2[i] !== this.#end; i = (i + 1) % LINE2.length) {
       yield LINE2[i];
     }
 
-    // LINE2[i] === this.#end 
+    // LINE2[i] === this.#end
     yield LINE2[i];
     this.#didEnd = true;
   }

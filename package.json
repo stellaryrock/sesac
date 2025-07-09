@@ -5,6 +5,7 @@
   },
   "devDependencies": {
     "@vitest/ui": "3.2.4",
+    "prettier": "^3.6.2",
     "react": "^19.1.0",
     "vitest": "^3.2.4",
     "vtest": "^1.1.0"
@@ -13,6 +14,8 @@
     "dev": "vite",
     "test": "vitest --globals",
     "test:ui": "vitest --ui",
-    "test:cov" : "vitest --coverage"
+    "test:cov": "vitest --coverage",
+    "format": "prettier --write .",
+    "build": ""
   }
 }

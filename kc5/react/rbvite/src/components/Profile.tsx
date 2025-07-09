@@ -1,4 +1,4 @@
-import type { LoginUser } from '../App';
+import type { LoginUser } from "../App";
 
 type Props = {
   loginUser: LoginUser;
@@ -6,7 +6,7 @@ type Props = {
 };
 
 const Profile = ({ loginUser, logout }: Props) => {
-  console.log('@@@Profile');
+  console.log("@@@Profile");
   return (
     <>
       <div>User Name: {loginUser.name}</div>
