@@ -5,7 +5,7 @@ const arr = [1,2,3,4];
 
 describe("reduce.ts", () => {
   test("reduce", () => {
-    expect(reduce(arr, (acc, a) => acc + a)).toStrictEqual(arr.reduce((acc,a) => acc + a));
-    expect(reduce(arr, (acc, a) => acc + a, 5)).toStrictEqual(arr.reduce((acc,a) => acc + a, 5));
+    expect(reduce<number>(arr, (acc, a) => acc + a)).toStrictEqual(arr.reduce((acc,a) => acc + a));
+    expect(reduce<number>(arr, (acc, a) => acc + a, 5)).toStrictEqual(arr.reduce((acc,a) => acc + a, 5));
   });
 });
