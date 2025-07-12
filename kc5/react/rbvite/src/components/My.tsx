@@ -3,6 +3,7 @@ import type { Cart, Session, LoginFn } from "../App";
 import {useRef, useState} from "react";
 import Login from "./Login";
 import Profile from "./Profile";
+// import * as mycss from "./My.css"
 
 type Props = {
   session : Session;
@@ -61,7 +62,7 @@ const My = ({ session: { loginUser, cart }, login, logout, removeItem, addItem, 
           <li key={id}>
             <a href="#" onClick = {()=>{setWorkingItem({id, name, price})}}>
               {name}({price.toLocaleString()})
-              <button onClick={(evt) => {evt.preventDefault(); removeItem(id)}}>
+              <button className = "btn btn-sm red" onClick={() => {removeItem(id)}}>
                 X
               </button>
             </a>

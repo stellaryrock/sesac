@@ -1,3 +1,5 @@
+
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -11,6 +13,22 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+button:hover{
+  background-color: antiquewhite;
+}
+
+button.btn{
+  border: 1px solid #eee;
+}
+
+button.btn-sm{
+  margin: .5rem .5rem;
+}
+
+.red{
+  color : red;
 }
 
 a {
