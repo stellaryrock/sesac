@@ -15,6 +15,13 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+
+form.item{
+  display: flex;
+  flex-direction: column;
+  gap : .1rem;
+}
+
 button:hover{
   background-color: antiquewhite;
 }
