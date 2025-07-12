@@ -4,7 +4,7 @@ import Profile from './Profile';
 
 type Props = {
   session: Session;
-  login: () => void;
+  login: (id:number, name: string) => void;
   logout: () => void;
 };
 
