@@ -10,6 +10,8 @@ export type Session = {
   cart: Cart[];
 };
 
+export type LoginFn = (id: number, name: string) => void;
+
 const SampleSession: Session = {
   loginUser: { id: 1, name: "hong" },
   cart: [
@@ -19,17 +21,20 @@ const SampleSession: Session = {
   ],
 };
 
+
 function App() {
   const [session, setSession] = useState<Session>(SampleSession);
 
-  const login = () => {};
-  const logout = () => {
-    setSession({ loginUser: null, cart: [] });
-  };
+  const login = (id: number, name : string) => setSession({...session , loginUser : {id, name}});
+  const logout = () => setSession({ loginUser: null, cart: [] });
+
+  const removeItem = (id: number) => setSession({...session, cart: [...session.cart.filter(item => item.id !== id)]});
+  const addItem = (name: string, price : number) => setSession({...session, cart : [...session.cart, {id: session.cart.length, name, price}]});
+  const editItem = (item : Cart) => setSession({...session, cart : session.cart.map(cart => cart.id === item.id ? item : cart )});
 
   return (
     <>
-      <My session={session} login={login} logout={logout} />
+      <My session={session} login={login} logout={logout} removeItem={removeItem} addItem = {addItem} editItem={editItem} />
     </>
   );
 }

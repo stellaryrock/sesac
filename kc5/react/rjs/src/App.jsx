@@ -55,11 +55,8 @@ function App() {
 
   const plusCount = () => {
     setCount((count) => count + 1);
-    console.log(`count : ${count}`);
 
-    console.log(`before add 1 x : ${x}`);
     x = x + 1;
-    console.log(`after add 1 x : ${x}`);
   };
 
   return (
