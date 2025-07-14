@@ -48,6 +48,10 @@ function App() {
       });
   };
 
+  const modifyItem = (newer: CartItem) => {
+    setSession({...session, cart: session.cart.map(item => item.id === newer.id ? newer : item)}) 
+  }
+  
   return (
     <>
       <h1>ReactBasic</h1>
@@ -57,6 +61,7 @@ function App() {
         logout={logout}
         addItem={addItem}
         removeItem={removeItem}
+        modifyItem={modifyItem}
       />
 
       <button onClick={clickCount}>count is {count}</button>
