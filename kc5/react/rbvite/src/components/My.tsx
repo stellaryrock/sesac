@@ -136,7 +136,6 @@ export default function My({
               >
                 X
               </button>
-            
           </li>
         ))}
       </ul>
