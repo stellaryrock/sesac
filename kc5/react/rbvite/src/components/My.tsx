@@ -10,7 +10,7 @@ type Props = {
   login: (id: number, name: string) => void;
   addItem: (newer: CartItem) => void;
   removeItem: (id: number) => void;
-  modifyItem: (newer: CartItem) => void;
+  editItem: (newer: CartItem) => void;
 };
 
 export default function My({
@@ -19,41 +19,36 @@ export default function My({
   logout,
   addItem,
   removeItem,
-  modifyItem
+  editItem
 }: Props) {
-  const [modifying, setModifying] = useState(false);
 
-  const idRef = useRef<HTMLInputElement>(null);
   const nameRef = useRef<HTMLInputElement>(null);
   const priceRef = useRef<HTMLInputElement>(null);
 
-  const onClickList = (id : number , name: string, price : number) => {
-    setModifying(true);
+  const [workingItem, setWorkingItem] = useState<CartItem | null>(null);
 
-    idRef.current!.value = String(id);
-    nameRef.current!.value = name;
-    priceRef.current!.value = String(price);
-  }
+  // const editItem = (id : number , name: string, price : number) => {
+  //   idRef.current!.value = String(id);
+  //   nameRef.current!.value = name;
+  //   priceRef.current!.value = String(price);
+  // }
 
-  const modifyCartItem = (evt : FormEvent<HTMLFormElement>) => {
+  const saveCartItem = (evt: FormEvent<HTMLFormElement>) => {
     evt.preventDefault();
-    if (!idRef.current || !nameRef.current || !priceRef.current) return;
+    if (!nameRef.current || !priceRef.current) return;
 
-    const id = idRef.current?.value;
+    const id = workingItem ? workingItem.id : 0;
     const name = nameRef.current?.value;
     const price = priceRef.current?.value;
 
     let key: string | undefined;
-    let ref: RefObject<HTMLInputElement | null> = idRef;
-
-    if (!id) {
-      key = '아이디';
-    }
+    let ref: RefObject<HTMLInputElement | null> = nameRef;
 
     if (!name || !name?.trim()) {
       key = '상품명';
       ref = nameRef;
     }
+
 
     if (!price) {
       key = '가격';
@@ -66,53 +61,24 @@ export default function My({
       return;
     }
 
-    modifyItem({ id: Number(id), name, price: Number(price) });
+    const isEditing = !!workingItem;
+    const action = isEditing ? editItem : addItem;
+    action({ id: Number(id), name: name!, price: Number(price) });
 
-    idRef.current.value = '';
     nameRef.current.value = '';
     priceRef.current.value = '';
-    idRef.current?.focus();
-  }
-
-  const addCartItem = (evt: FormEvent<HTMLFormElement>) => {
-    evt.preventDefault();
-    if (!idRef.current || !nameRef.current || !priceRef.current) return;
-
-    const id = idRef.current?.value;
-    const name = nameRef.current?.value;
-    const price = priceRef.current?.value;
-
-    let key: string | undefined;
-    let ref: RefObject<HTMLInputElement | null> = idRef;
-
-    if (!id) {
-      key = '아이디';
-    }
-
-    if (!name || !name?.trim()) {
-      key = '상품명';
-      ref = nameRef;
-    }
-
-    if (!price) {
-      key = '가격';
-      ref = priceRef;
-    }
-
-    if (key) {
-      alert(`${key} 값을 입력하세요!`);
-      ref?.current?.focus();
-      return;
-    }
-
-    addItem({ id: Number(id), name: name!, price: Number(price) });
-
-    idRef.current.value = '';
-    nameRef.current.value = '';
-    priceRef.current.value = '';
-
-    idRef.current?.focus();
+    setWorkingItem(null);
   };
+
+  const setWorkingItemValues = (workingItem : CartItem) => {
+    if(!nameRef.current || !priceRef.current)
+      return;
+
+    nameRef.current.value = workingItem.name;
+    priceRef.current.value = String(workingItem.price);
+    
+    setWorkingItem(workingItem);
+  }
 
   return (
     <>
@@ -125,8 +91,8 @@ export default function My({
       <ul>
         {session.cart.map(({ id, name, price }) => (
           <li key={id}>
-              <a href="#" onClick={()=>onClickList(id,name,price)}>
-                <small>{id}.</small> {name}
+              <a href="#" onClick={()=>setWorkingItemValues({ id, name, price})}>
+                <small>{id}</small> {name}
                 <small>({price.toLocaleString()})</small>
               </a>
               <button
@@ -140,12 +106,11 @@ export default function My({
         ))}
       </ul>
        
-      <form onSubmit={ modifying ? modifyCartItem : addCartItem } className='item-form'>
-        <input type='number' ref={idRef} />
+      <form className='item-form' onSubmit={saveCartItem}>
         <input type='text' ref={nameRef} />
         <input type='number' ref={priceRef} />
-        <button type='reset' onClick={()=>setModifying(false)}>취소</button>
-        <button type='submit'>{modifying ? "수정" : "등록"}</button>
+        <button type='reset' onClick={()=>setWorkingItemValues({id: 0, name:'', price: 0})}>취소</button>
+        <button type='submit'>{workingItem ? "수정" : "등록"}</button>
       </form>
     </>
   );

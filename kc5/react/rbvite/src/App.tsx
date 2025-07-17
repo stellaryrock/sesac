@@ -37,8 +37,10 @@ function App() {
 
   const logout = () => setSession({ ...session, loginUser: null });
 
-  const addItem = (newer: CartItem) =>
-    setSession({ ...session, cart: [...session.cart, newer] });
+  const addItem = (newer : CartItem) => {
+    newer.id = Math.max(...session.cart.map(({id}) => id), 0) + 1;
+    setSession({...session, cart: [...session.cart, newer] });
+  }
 
   const removeItem = (id: number) => {
     if (confirm('Are u sure??'))
@@ -48,8 +50,11 @@ function App() {
       });
   };
 
-  const modifyItem = (newer: CartItem) => {
-    setSession({...session, cart: session.cart.map(item => item.id === newer.id ? newer : item)}) 
+  const editItem = (editingItem: CartItem) => {
+    setSession({
+      ...session, 
+      cart: session.cart.map(item => item.id === editingItem.id ? editingItem : item)
+    });
   }
   
   return (
@@ -61,7 +66,7 @@ function App() {
         logout={logout}
         addItem={addItem}
         removeItem={removeItem}
-        modifyItem={modifyItem}
+        editItem={editItem}
       />
 
       <button onClick={clickCount}>count is {count}</button>
