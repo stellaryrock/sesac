@@ -2,8 +2,8 @@
 Array.reduce 함수를 고차 함수로 직접 구현하시오.
 */
 
-// @시코 - 시니어 코딩 유튜브 참조 
-// https://www.youtube.com/watch?v=IninpD-gIIc , 33:37 ~
+// 출처 - 전성호 쌤 유튜브  
+// [@시코 - 시니어 코딩] https://www.youtube.com/watch?v=IninpD-gIIc , 33:37 ~
 
 export const reduce = <T>(
   arr: T[],
