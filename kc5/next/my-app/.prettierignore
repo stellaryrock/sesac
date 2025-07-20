@@ -1,0 +1,15 @@
+.gitignore
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# 100MB 이상 파일 제외
+**/*.{zip,tar,gz}
+**/*.{mp4,mov}
+
+**/generated/
+**/__generated__/
+.next

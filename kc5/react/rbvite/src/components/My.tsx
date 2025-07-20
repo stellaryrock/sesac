@@ -91,10 +91,10 @@ export default function My({
       <ul>
         {session.cart.map(({ id, name, price }) => (
           <li key={id}>
-              <a href="#" onClick={()=>setWorkingItemValues({ id, name, price})}>
+              <button onClick={()=>setWorkingItemValues({ id, name, price})}>
                 <small>{id}</small> {name}
                 <small>({price.toLocaleString()})</small>
-              </a>
+              </button>
               <button
                 onClick={() => removeItem(id)}
                 className='btn btn-sm red'
