@@ -18,7 +18,7 @@ export default function ModalID({ params } : Props){
 
   return (
     <>
-      <div className="fixed left-0 top-0 h-full w-full bg-amber-950/70 ">
+      <div className="fixed left-0 top-0 h-full w-full bg-zinc-950/80 ">
         <div className="absolute top-1/2 left-1/2 -translate-1/2">
           <Link href={`/photos/${id}`}>
             <Image
@@ -30,9 +30,7 @@ export default function ModalID({ params } : Props){
           </Link>
           <button className='bg-amber-50 p-3' onClick={onClickPrev}>이전으로 돌아가기</button>
         </div>
-        
       </div>
-      
     </>
   )
 }
