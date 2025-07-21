@@ -24,8 +24,6 @@ export async function generateStaticParams() {
 export default function HiTime({ params }: Props) {
   const { time } = use(params);
 
-  console.log(params);
-
   return (
     <>
       <h1 className='text-2xl capitalize'>good {time}</h1>
