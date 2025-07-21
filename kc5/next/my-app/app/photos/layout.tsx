@@ -13,7 +13,7 @@ export default function ParalellLayout({
 
   return (
     <>
-      <div className="my-2 border-2 border-amber-200">{children}</div>
+      <div className="my-2 border-2 border-amber-00">{children}</div>
       <div>{photolist}</div>
       <div>{modal}</div>
     </>
