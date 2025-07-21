@@ -1,6 +1,3 @@
-export default function ParallelModal(){
-
-  return (
-    <></>
-  )
+export default function ParallelModal() {
+  return <></>;
 }

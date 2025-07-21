@@ -1,11 +1,11 @@
-import { use } from "react";
-import Image
- from "next/image";
+import Image from 'next/image';
+import { use } from 'react';
+
 type Props = {
-  params : Promise<{id : string}>
+  params: Promise<{ id: string }>;
 };
 
-export default function PhotosID({ params } : Props){
+export default function PhotosID({ params }: Props) {
   const { id } = use(params);
   return (
     <>
@@ -16,5 +16,5 @@ export default function PhotosID({ params } : Props){
         height={150}
       />
     </>
-  )
+  );
 }

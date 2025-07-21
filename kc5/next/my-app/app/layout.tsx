@@ -35,9 +35,7 @@ export default function RootLayout({
           <Link href={'/hi/evening'}>Hi/evening</Link>
         </nav>
         <hr className='border-amber-200' />
-        <div className='container mx-auto'>
-          {children}
-        </div>
+        <div className='container mx-auto'>{children}</div>
       </body>
     </html>
   );
