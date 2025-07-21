@@ -107,8 +107,8 @@ export default function My({
       </ul>
        
       <form className='item-form' onSubmit={saveCartItem}>
-        <input type='text' ref={nameRef} />
-        <input type='number' ref={priceRef} />
+        <input type='text' placeholder='상품명' ref={nameRef} />
+        <input type='number' placeholder='금액' defaultValue={3000} ref={priceRef} />
         <button type='reset' onClick={()=>setWorkingItemValues({id: 0, name:'', price: 0})}>취소</button>
         <button type='submit'>{workingItem ? "수정" : "등록"}</button>
       </form>

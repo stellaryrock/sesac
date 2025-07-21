@@ -1,1 +1,1 @@
-https://learn-7rypy1me2-kjs-projects-bba9469f.vercel.app/
+https://learn-zinn-url.vercel.app/

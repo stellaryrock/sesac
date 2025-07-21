@@ -5,6 +5,7 @@
   },
   "devDependencies": {
     "@vitest/ui": "3.2.4",
+    "eslint-config-prettier": "^10.1.8",
     "prettier": "^3.6.2",
     "react": "^19.1.0",
     "vitest": "^3.2.4",
@@ -16,6 +17,6 @@
     "test:ui": "vitest --ui",
     "test:cov": "vitest --coverage",
     "format": "prettier --write .",
-    "build": ""
+    "deploy": "gh-pages -d dist"
   }
 }

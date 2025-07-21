@@ -13,9 +13,8 @@ export default function ModalID({ params }: Props) {
   const { id } = use(params);
   const router = useRouter();
 
-  const onClickPrev: MouseEventHandler<HTMLButtonElement> = (evt) => {
-    router.back();
-  };
+  const onClickPrev: MouseEventHandler<HTMLButtonElement> = () => router.back();
+
 
   return (
     <>
@@ -29,7 +28,7 @@ export default function ModalID({ params }: Props) {
               height={300}
             />
           </Link>
-          <button className='btn-primary' onClick={onClickPrev}>
+          <button className='btn btn-primary' onClick={onClickPrev}>
             이전으로 돌아가기
           </button>
         </div>
