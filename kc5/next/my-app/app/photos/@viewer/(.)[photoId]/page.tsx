@@ -1,6 +1,6 @@
-import { getPhoto } from '@/app/actions/photo';
 import Modal from '@/components/Modal';
 import Image from 'next/image';
+import { getPhoto } from '@/lib/actions/photo';
 
 type Props = {
   params: Promise<{ photoId: string }>;

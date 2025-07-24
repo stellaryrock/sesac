@@ -33,6 +33,7 @@ export default function RootLayout({
           <Link href={'/hi/morning'}>Hi/morning</Link>
           <Link href={'/hi/afternoon'}>Hi/afternoon</Link>
           <Link href={'/hi/evening'}>Hi/evening</Link>
+          <Link href={'/photos'}>Photos</Link>
         </nav>
         <hr className='border-amber-200' />
         <div className='container mx-auto'>{children}</div>

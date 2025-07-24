@@ -1,7 +1,7 @@
-import { getPhotos } from '@/app/actions/photo';
 import Image from 'next/image';
 import Link from 'next/link';
 import { use } from 'react';
+import { getPhotos } from '@/lib/actions/photo';
 
 export default function Photos() {
   const photos = use(getPhotos());

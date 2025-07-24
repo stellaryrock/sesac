@@ -1,0 +1,32 @@
+@api = http://localhost:3000/api
+
+### book list
+GET {{api}}/books  HTTP/1.1
+
+### Search Title
+GET {{api}}/books?q=1 HTTP/1.1
+
+### add book
+POST {{api}}/books HTTP/1.1
+Content-Type: application/json
+
+{
+  "title": "New Book",
+  "writer": "Jade"
+}
+
+### get one
+GET {{api}}/books/1 HTTP/1.1
+
+### delete one
+DELETE {{api}}/books/1 HTTP/1.1
+
+### patch one
+PATCH {{api}}/books/1 HTTP/1.1
+
+{
+  "title": "New Title"
+}
+
+### header
+GET {{api}}/header HTTP/1.1
