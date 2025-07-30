@@ -7,3 +7,14 @@ datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
+
+model MyUser {
+  id         Int      @id @default(autoincrement())
+  name       String   @db.VarChar(36)
+  email      String   @unique @db.VarChar(128)
+  createdate DateTime @default(now())
+  updatedate DateTime @default(now())
+  passwd     String?  @db.VarChar(128)
+
+  @@index([email])
+}

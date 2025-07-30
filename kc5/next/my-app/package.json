@@ -8,9 +8,15 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "db:pull": "dotenv -e .env.local prisma db pull",
+    "db:push": "dotenv -e .env.local prisma db push",
+    "db:gen": "dotenv -e .env.local prisma generate",
+    "db:mig": "dotenv -e .env.local prisma migrate dev",
+    "db:studio": "dotenv -e .env.local prisma studio"
   },
   "dependencies": {
+    "@prisma/client": "6.12.0",
     "@radix-ui/react-dropdown-menu": "^2.1.15",
     "@radix-ui/react-slot": "^1.2.3",
     "class-variance-authority": "^0.7.1",
@@ -32,6 +38,8 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "autoprefixer": "^10.4.21",
+    "dotenv": "^17.2.1",
+    "dotenv-cli": "^9.0.0",
     "eslint": "^9",
     "eslint-config-next": "15.4.2",
     "eslint-config-prettier": "^10.1.8",

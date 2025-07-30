@@ -20,6 +20,7 @@ const eslintConfig = [
   ...compat.config({
     extends: ['next', 'next/typescript', 'prettier'],
     rules: {},
+    ignorePatterns: ['lib/generated/prisma/**'],
   }),
 ];
 
