@@ -30,3 +30,11 @@ PATCH {{api}}/books/1 HTTP/1.1
 
 ### header
 GET {{api}}/header HTTP/1.1
+
+### create user
+POST {{api}}/user/create HTTP/1.1
+
+{
+  "name": "test",
+  "email": "test@email.com"
+}

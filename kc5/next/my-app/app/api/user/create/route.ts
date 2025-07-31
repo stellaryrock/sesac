@@ -1,31 +1,28 @@
-import { prisma } from "@/lib/db";
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/db';
 
 export const POST = async (req: NextRequest) => {
   const { name, email } = await req.json();
 
-  const user = prisma.myUser.create({
-    data:{
+  const user = await prisma.myUser.create({
+    data: {
       name,
-      email
-    }
+      email,
+    },
   });
 
   return NextResponse.json(user);
-}
+};
 
-// response
+
 /*
+// response
 {
-  "spec": {
-      "action": "create",
-      "args": {
-          "data": {
-              "name": "Park",
-              "email": "Park@email.com"
-          }
-      },
-      "model": "MyUser"
-  }
+  "id": 4,
+  "name": "test",
+  "email": "test@email.com",
+  "createdate": "~",
+  "updatedate": "~",
+  "passwd": null
 }
 */
