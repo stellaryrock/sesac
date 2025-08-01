@@ -32,9 +32,22 @@ PATCH {{api}}/books/1 HTTP/1.1
 GET {{api}}/header HTTP/1.1
 
 ### create user
-POST {{api}}/user/create HTTP/1.1
+POST {{api}}/user HTTP/1.1
 
 {
-  "name": "test",
-  "email": "test@email.com"
+  "name": "aa",
+  "email": "aa@email.com"
 }
+
+### find user by id
+GET {{api}}/user/1 HTTP/1.1
+
+### update user
+PATCH {{api}}/user/1 HTTP/1.1
+
+{
+  "id": "1",
+  "name": "kim1",
+  "email": "kim1@email.com"
+}
+
