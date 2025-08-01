@@ -35,8 +35,8 @@ GET {{api}}/header HTTP/1.1
 POST {{api}}/user HTTP/1.1
 
 {
-  "name": "aa",
-  "email": "aa@email.com"
+  "name": "abc",
+  "email": "abc@email.com"
 }
 
 ### find user by id
@@ -51,3 +51,7 @@ PATCH {{api}}/user/1 HTTP/1.1
   "email": "kim1@email.com"
 }
 
+
+### delete user
+
+DELETE {{api}}/user/1 HTTP/1.1
