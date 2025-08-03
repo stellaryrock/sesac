@@ -1,1 +1,0 @@
-https://learn-zinn-url.vercel.app/
