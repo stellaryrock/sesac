@@ -14,18 +14,18 @@ export const POST = async (request: NextRequest) => {
   return NextResponse.json(user);
 };
 
-export const PATCH = async (request: NextRequest ) => {
+export const PATCH = async (request: NextRequest) => {
   const { id, name, email } = await request.json();
 
   const user = await prisma.myUser.update({
     where: {
-      id: +id
+      id: +id,
     },
     data: {
       name,
-      email
-    }
+      email,
+    },
   });
 
   return NextResponse.json(user);
-}
+};
